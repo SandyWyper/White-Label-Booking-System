@@ -208,3 +208,4 @@ __marimo__/
 
 env.py
 staticfiles/
+.vscode
