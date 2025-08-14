@@ -16,14 +16,11 @@
         <div>
           <div>
             <div>
-              <a href="{{ home_url }}">
+              <a href="{% url 'home' %}">
                 Booking home</a>
             </div>
             <ul>
               {% if user.is_authenticated %}
-                <li>
-                  <a href="{% url 'profiles:profile' username=user.username %}">My Profile</a>
-                </li>
                 <li>
                   <a href="{% url 'account_logout' %}">Logout</a>
                 </li>

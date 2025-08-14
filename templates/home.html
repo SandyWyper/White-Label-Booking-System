@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to White Label Booking System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Welcome to the White Label Booking System</h1>
+    <p>Your comprehensive booking solution.</p>
+    
+    {% if user.is_authenticated %}
+        <h2>Welcome back, {{ user.username }}!</h2>
+        <p>You are logged in and ready to start booking.</p>
+    {% else %}
+        <h2>Get Started</h2>
+        <p>Please <a href="{% url 'account_login' %}">login</a> or <a href="{% url 'account_signup' %}">register</a> to begin.</p>
+    {% endif %}
+</div>
+{% endblock %}
