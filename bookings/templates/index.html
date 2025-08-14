@@ -1,5 +1,25 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Bookings</h1>
+<div style="display: flex; flex-direction: row; gap: 3rem; align-items: center; justify-content: center; height: 500px;">
+
+
+    <div>
+        <h1>Bookings</h1>
+        <button> choose date </button>
+    </div>
+    <div>
+        <!-- // bookings slots -->
+         <h3 >1/10/25</h3>
+         <div id="bookings-slots" style="border: 1px solid black; padding: 1rem; ">
+            {% for slot in slots %}
+                <div class="booking-slot">
+                    <h4>{{ slot.time_start }}</h4>
+                    <button>Book</button>
+                </div>
+            {% endfor %}
+         </div>
+    </div>
+</div>
+
 {% endblock %}
