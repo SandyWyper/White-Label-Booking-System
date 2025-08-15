@@ -3,19 +3,72 @@
     <div style="display: flex;
                 flex-direction: row;
                 gap: 3rem;
-                align-items: center;
                 justify-content: center;
                 height: 500px">
         <div>
             <h1>Bookings</h1>
-            <button id="choose-date">choose date</button>
+            <label for="choose-date">Choose Date</label>
+            <input id="choose-date"
+                   type="text"
+                   placeholder="Choose date"
+                   style="width: 200px;
+                          height: 30px"
+                   data-id="datetime">
         </div>
         <div>
             <!-- // bookings slots -->
-            <h3>1/10/25</h3>
+            <h3 id="bookings-date">1/10/25</h3>
             <div id="bookings-slots" style="border: 1px solid black; padding: 1rem; ">
                 {% include "available-time-slots.html" %}
             </div>
         </div>
     </div>
+{% endblock %}
+{% block extra_js %}
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Initialize the datepicker
+        var datepicker = new Datepicker('#choose-date', {
+            inline: false,
+            onChange: function(selectedDate) {
+                // Handle date selection
+                // You can add AJAX call here to update booking slots
+                if (selectedDate) {
+                console.log('Date selected:', selectedDate);
+                updateBookingSlots(selectedDate);
+                }
+            }
+        });
+        
+        function updateBookingSlots(selectedDate) {
+            // update the date in the h3
+            document.getElementById("bookings-date").innerHTML = parseDate(selectedDate);
+            if (selectedDate) {
+                console.log('Updating slots for date:', selectedDate, parseDate(selectedDate));
+                loadSection("{% url 'available_time_slots' %}?date=" + parseDate(selectedDate), "bookings-slots");
+            }
+        }
+
+        function parseDate(date) {
+            return new Date(date).getFullYear() + '-' + (new Date(date).getMonth() +1)  + '-' + new Date(date).getDate();
+        }
+
+
+        async function loadSection(url, targetId) {
+            try {
+                const response = await fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" }});
+                const html = await response.text();
+                document.getElementById(targetId).innerHTML = html;
+            } catch (err) {
+                console.error("Error loading section:", err);
+            }
+        }
+
+        function initAvailableTimeSlotsPartial() {
+            loadSection("{% url 'available_time_slots' %}", "bookings-slots");
+        }
+
+       initAvailableTimeSlotsPartial()
+    });
+    </script>
 {% endblock %}
