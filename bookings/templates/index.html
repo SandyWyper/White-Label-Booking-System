@@ -23,6 +23,7 @@
             </div>
         </div>
     </div>
+    <div id="user-bookings-section">{% include "user-bookings.html" %}</div>
 {% endblock %}
 {% block extra_js %}
     <script>
@@ -66,7 +67,12 @@
 
         function initAvailableTimeSlotsPartial() {
             loadSection("{% url 'available_time_slots' %}", "bookings-slots");
+            loadSection("{% url 'user_bookings' %}", "user-bookings-section");
         }
+
+        document.addEventListener('booking-confirmed', function(event) {
+            loadSection("{% url 'user_bookings' %}", "user-bookings-section");
+        });
 
        initAvailableTimeSlotsPartial()
     });

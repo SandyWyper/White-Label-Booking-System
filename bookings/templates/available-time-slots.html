@@ -62,6 +62,12 @@ async function bookSlot(slotId) {
             // Remove the booking slot or update its appearance
             const slotDiv = document.querySelector(`div[data-slot-id="${slotId}"]`);
             slotDiv.classList.add('booked-slot');
+
+            document.dispatchEvent(new CustomEvent('booking-confirmed', {
+                detail: {
+                    slotId: slotId
+                }
+            }));
             
         } else {
             // Show error message

@@ -1,0 +1,13 @@
+<div>
+    <h1>Your Bookings</h1>
+    <div>
+        {% for booking in user_bookings %}
+            <div>
+                <h2>{{ booking.time_slot.bookable_item.name }}</h2>
+                <p>Time: {{ booking.time_slot.time_start }}</p>
+                <p>Length: {{ booking.time_slot.time_length }}</p>
+                {% if booking.notes %}<p>Notes: {{ booking.notes }}</p>{% endif %}
+            </div>
+        {% endfor %}
+    </div>
+</div>

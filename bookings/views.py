@@ -14,6 +14,23 @@ def index(request):
     return render(request, 'index.html')
 
 
+def user_bookings(request):
+    """
+    Return user's current and future bookings as a partial template.
+    """
+    if not request.user.is_authenticated:
+        return render(request, 'user-bookings.html', {'user_bookings': []})
+    
+    user_bookings = Booking.objects.filter(
+        user=request.user,
+        time_slot__time_start__gte=timezone.now()
+    ).select_related('time_slot__bookable_item').order_by('time_slot__time_start')
+    
+    return render(request, 'user-bookings.html', {
+        'user_bookings': user_bookings
+    })
+
+
 def available_time_slots(request):
     # Get date from query parameter, default to today if not provided
     date_str = request.GET.get('date')
