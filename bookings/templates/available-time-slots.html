@@ -1,6 +1,8 @@
 <div>
     <h1>Available Time Slots</h1>
-    <div id="booking-confirmation" class="booking-confirmation" style="display: none;">
+    <div id="booking-confirmation"
+         class="booking-confirmation"
+         style="display: none">
         <h3>Booking Confirmed!</h3>
         <p id="confirmation-message"></p>
         <button onclick="hideConfirmation()">Close</button>
@@ -11,9 +13,9 @@
                 <h4>{{ slot.time_start|date:"H:i" }} - {{ slot.bookable_item.name }}</h4>
                 {% if slot.is_available %}
                     {% if user.is_authenticated %}
-                        <button class="book-btn" onclick="bookSlot({{ slot.id }})" data-slot-id="{{ slot.id }}">
-                            Book
-                        </button>
+                        <button class="book-btn"
+                                onclick="bookSlot({{ slot.id }})"
+                                data-slot-id="{{ slot.id }}">Book</button>
                     {% else %}
                         <button disabled>
                             <a href="{% url 'account_login' %}">Login to Book</a>
@@ -26,7 +28,6 @@
         {% endfor %}
     </div>
 </div>
-
 <script>
 async function bookSlot(slotId) {
     const button = document.querySelector(`button[data-slot-id="${slotId}"]`);
@@ -111,7 +112,6 @@ function getCookie(name) {
     return cookieValue;
 }
 </script>
-
 <style>
 .booking-confirmation {
     background-color: #d4edda;
