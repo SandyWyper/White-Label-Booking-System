@@ -1,7 +1,14 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from django.utils import timezone
+from django.db import transaction
 from datetime import datetime
-from .models import BookingTimeSlot
+from .models import BookingTimeSlot, Booking
+import json
+
 
 def index(request):
     return render(request, 'index.html')
@@ -27,3 +34,62 @@ def available_time_slots(request):
         'slots': slots,
         'selected_date': filter_date
     })
+
+
+@login_required
+@require_POST
+@csrf_exempt
+def book_time_slot(request):
+    """
+    Handle booking a time slot via AJAX request.
+    """
+    try:
+        data = json.loads(request.body)
+        slot_id = data.get('slot_id')
+        
+        if not slot_id:
+            return JsonResponse({
+                'success': False,
+                'error': 'Slot ID is required'
+            }, status=400)
+        
+        # Get the time slot
+        time_slot = get_object_or_404(BookingTimeSlot, id=slot_id)
+        
+        # Check if slot is available
+        if not time_slot.is_available():
+            return JsonResponse({
+                'success': False,
+                'error': 'This time slot is no longer available'
+            }, status=400)
+        
+        # Use transaction to ensure atomicity
+        with transaction.atomic():
+            # Create the booking
+            booking = Booking.objects.create(
+                user=request.user,
+                time_slot=time_slot
+            )
+            
+            # Update the time slot status
+            time_slot.status = 'booked'
+            time_slot.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Booking confirmed successfully!',
+            'booking_id': booking.id,
+            'slot_time': time_slot.time_start.strftime('%Y-%m-%d %H:%M'),
+            'bookable_item': time_slot.bookable_item.name
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON data'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'An error occurred: {str(e)}'
+        }, status=500)
