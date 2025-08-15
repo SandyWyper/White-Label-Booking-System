@@ -23,10 +23,12 @@
             </div>
         </div>
     </div>
+    <div id="user-bookings-section">{% include "user-bookings.html" %}</div>
 {% endblock %}
 {% block extra_js %}
     <script>
     document.addEventListener("DOMContentLoaded", function() {
+        let globalSelectedDate = null;
         // Initialize the datepicker
         var datepicker = new Datepicker('#choose-date', {
             inline: false,
@@ -35,6 +37,7 @@
                 // You can add AJAX call here to update booking slots
                 if (selectedDate) {
                 console.log('Date selected:', selectedDate);
+                globalSelectedDate = selectedDate;
                 updateBookingSlots(selectedDate);
                 }
             }
@@ -44,7 +47,6 @@
             // update the date in the h3
             document.getElementById("bookings-date").innerHTML = parseDate(selectedDate);
             if (selectedDate) {
-                console.log('Updating slots for date:', selectedDate, parseDate(selectedDate));
                 loadSection("{% url 'available_time_slots' %}?date=" + parseDate(selectedDate), "bookings-slots");
             }
         }
@@ -66,7 +68,23 @@
 
         function initAvailableTimeSlotsPartial() {
             loadSection("{% url 'available_time_slots' %}", "bookings-slots");
+            loadSection("{% url 'user_bookings' %}", "user-bookings-section");
         }
+
+        document.addEventListener('booking-confirmed', function(event) {
+            loadSection("{% url 'user_bookings' %}", "user-bookings-section");
+        });
+
+        document.addEventListener('booking-cancelled', function(event) {
+            // get selected date;
+            console.log("selectedDate", globalSelectedDate);
+            if (globalSelectedDate) {
+                loadSection("{% url 'available_time_slots' %}?date=" + parseDate(globalSelectedDate), "bookings-slots");
+            } else {
+                loadSection("{% url 'available_time_slots' %}", "bookings-slots");
+            }
+            loadSection("{% url 'user_bookings' %}", "user-bookings-section");
+        });
 
        initAvailableTimeSlotsPartial()
     });

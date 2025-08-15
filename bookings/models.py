@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator
+from django.contrib.auth.models import User
 
 
 class BookableItem(models.Model):
@@ -73,3 +74,50 @@ class BookingTimeSlot(models.Model):
     def is_available(self):
         """Check if this time slot is available for booking."""
         return self.status == 'available'
+
+
+class Booking(models.Model):
+    """
+    Represents a confirmed booking made by a user for a specific time slot.
+    """
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='bookings',
+        help_text="The user who made this booking"
+    )
+    time_slot = models.OneToOneField(
+        BookingTimeSlot,
+        on_delete=models.CASCADE,
+        related_name='booking',
+        help_text="The time slot that was booked"
+    )
+    notes = models.TextField(
+        blank=True,
+        help_text="Additional notes or special requests for the booking"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Booking"
+        verbose_name_plural = "Bookings"
+
+    def __str__(self):
+        return f"{self.user.username} - {self.time_slot.bookable_item.name} on {self.time_slot.time_start.strftime('%Y-%m-%d %H:%M')}"
+
+    @property
+    def bookable_item(self):
+        """Get the bookable item for this booking."""
+        return self.time_slot.bookable_item
+
+    @property
+    def start_time(self):
+        """Get the start time for this booking."""
+        return self.time_slot.time_start
+
+    @property
+    def end_time(self):
+        """Get the end time for this booking."""
+        return self.time_slot.time_end

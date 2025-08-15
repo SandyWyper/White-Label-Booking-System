@@ -1,12 +1,167 @@
 <div>
     <h1>Available Time Slots</h1>
+    <div id="booking-confirmation"
+         class="booking-confirmation"
+         style="display: none">
+        <h3>Booking Confirmed!</h3>
+        <p id="confirmation-message"></p>
+        <button onclick="hideConfirmation()">Close</button>
+    </div>
     <div>
         {% for slot in slots %}
-            <div class="booking-slot">
-                <h4>{{ slot.time_start }}</h4>
-                <button>Book</button>
+            <div class="booking-slot" data-slot-id="{{ slot.id }}">
+                <h4>{{ slot.time_start|date:"H:i" }} - {{ slot.bookable_item.name }}</h4>
+                {% if slot.is_available %}
+                    {% if user.is_authenticated %}
+                        <button class="book-btn"
+                                onclick="bookSlot({{ slot.id }})"
+                                data-slot-id="{{ slot.id }}">Book</button>
+                    {% else %}
+                        <button disabled>
+                            <a href="{% url 'account_login' %}">Login to Book</a>
+                        </button>
+                    {% endif %}
+                {% else %}
+                    <button disabled>{{ slot.get_status_display }}</button>
+                {% endif %}
             </div>
         {% endfor %}
     </div>
 </div>
-<script></script>
+<script>
+async function bookSlot(slotId) {
+    const button = document.querySelector(`button[data-slot-id="${slotId}"]`);
+    const originalText = button.textContent;
+    
+    // Disable button and show loading state
+    button.disabled = true;
+    button.textContent = 'Booking...';
+    
+    try {
+        const response = await fetch('{% url "book_time_slot" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                slot_id: slotId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Show confirmation message
+            showConfirmation(data.message, data.slot_time, data.bookable_item);
+            
+            // Update the button to show booked state
+            button.textContent = 'Booked';
+            button.classList.add('booked');
+            
+            // Remove the booking slot or update its appearance
+            const slotDiv = document.querySelector(`div[data-slot-id="${slotId}"]`);
+            slotDiv.classList.add('booked-slot');
+
+            document.dispatchEvent(new CustomEvent('booking-confirmed', {
+                detail: {
+                    slotId: slotId
+                }
+            }));
+            
+        } else {
+            // Show error message
+            alert('Booking failed: ' + data.error);
+            button.disabled = false;
+            button.textContent = originalText;
+        }
+        
+    } catch (error) {
+        console.error('Booking error:', error);
+        alert('An error occurred while booking. Please try again.');
+        button.disabled = false;
+        button.textContent = originalText;
+    }
+}
+
+function showConfirmation(message, slotTime, bookableItem) {
+    const confirmationDiv = document.getElementById('booking-confirmation');
+    const messageElement = document.getElementById('confirmation-message');
+    
+    messageElement.innerHTML = `
+        <strong>${message}</strong><br>
+        <strong>Item:</strong> ${bookableItem}<br>
+        <strong>Time:</strong> ${slotTime}
+    `;
+    
+    confirmationDiv.style.display = 'block';
+    confirmationDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function hideConfirmation() {
+    document.getElementById('booking-confirmation').style.display = 'none';
+}
+
+// Function to get CSRF token from cookies
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+<style>
+.booking-confirmation {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 0.25rem;
+}
+
+.booking-slot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    margin: 0.5rem 0;
+    border: 1px solid #ddd;
+    border-radius: 0.25rem;
+}
+
+.booking-slot.booked-slot {
+    background-color: #f8f9fa;
+    opacity: 0.7;
+}
+
+.book-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+
+.book-btn:hover:not(:disabled) {
+    background-color: #0056b3;
+}
+
+.book-btn:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+.book-btn.booked {
+    background-color: #28a745;
+}
+</style>
