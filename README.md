@@ -17,10 +17,12 @@ This project is a white-label booking system designed to be easily integrated ("
 ## Tech Stack
 
 - **Python 3.13**
+- **JavaScript**
+- **HTML, CSS**
 - **Django 4.2**
-- **HTMX** for dynamic frontend interactions
+- **HTMX** (dynamic frontend interactions)
 - **Bootstrap** (optional, for styling)
-- **SQLite/PostgreSQL** (default: SQLite)
+- **PostgreSQL**
 
 ## Quick Start
 
@@ -77,6 +79,9 @@ This project is a white-label booking system designed to be easily integrated ("
 
 ## Design & Layout
 
+- ERD: ![ERD Diagram](planning_idea/erdiagrams/booking_hack_nobg.png)
+- WIREFRAME: ![WIREFRAME Diagram](planning_idea/wireframes/wireframes_v1.png)
+- USERPATH: ![USER PATH Diagram](planning_idea/erdiagrams/booking_hack_userpath_nobg.png)
 - Fonts:
 - Colour palette:  
 
