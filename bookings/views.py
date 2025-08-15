@@ -1,5 +1,16 @@
 from django.contrib.auth.decorators import user_passes_test
 
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from django.utils import timezone
+from django.db import transaction
+from datetime import datetime
+from .models import BookingTimeSlot, Booking
+import json
+
 # Staff dashboard: calendar and slot management
 @user_passes_test(lambda u: u.is_staff)
 def staff_dashboard(request):
@@ -27,17 +38,6 @@ def staff_dashboard(request):
         "slot_events": json.dumps(slot_events),
         "message": message
     })
-from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
-from django.utils import timezone
-from django.db import transaction
-from datetime import datetime
-from .models import BookingTimeSlot, Booking
-import json
-
 
 def index(request):
     return render(request, 'index.html')
