@@ -1,0 +1,34 @@
+<div>
+    <h1>Available Time Slots</h1>
+    <div>
+        {% for slot in slots %}
+            <div class="booking-slot">
+                <h4>{{ slot.time_start }}</h4>
+                <button>Book</button>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+<script>
+    async function loadSection(url, targetId) {
+            try {
+                const response = await fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" }});
+                const html = await response.text();
+                document.getElementById(targetId).innerHTML = html;
+            } catch (err) {
+                console.error("Error loading section:", err);
+            }
+        }
+
+        function initDashboard() {
+            loadSection("{% url 'available_time_slots' %}", "bookings-slots");
+        }
+
+        const chooseDateButton = document.getElementById("choose-date");
+
+        chooseDateButton.addEventListener("click", () => {
+            loadSection("{% url 'available_time_slots' %}?date=2025-10-2", "bookings-slots");
+        });
+
+        document.addEventListener("DOMContentLoaded", initDashboard);
+</script>
