@@ -1,3 +1,32 @@
+from django.contrib.auth.decorators import user_passes_test
+
+# Staff dashboard: calendar and slot management
+@user_passes_test(lambda u: u.is_staff)
+def staff_dashboard(request):
+    from .models import BookableItem, BookingTimeSlot, Booking
+    from datetime import timedelta
+    import json
+    message = None
+    # Get all slots for calendar
+    all_slots = BookingTimeSlot.objects.select_related('bookable_item').all()
+    # Prepare slot data for FullCalendar
+    slot_events = []
+    for slot in all_slots:
+        status = 'Booked' if hasattr(slot, 'booking') and Booking.objects.filter(time_slot=slot).exists() else 'Available'
+        slot_events.append({
+            'title': f"{slot.bookable_item.name} ({status})",
+            'start': slot.time_start.strftime('%Y-%m-%dT%H:%M:%S'),
+            'end': (slot.time_start + slot.time_length).strftime('%Y-%m-%dT%H:%M:%S'),
+            'extendedProps': {
+                'status': status,
+                'table': slot.bookable_item.name,
+                'slot_id': slot.id
+            }
+        })
+    return render(request, "staff_dashboard.html", {
+        "slot_events": json.dumps(slot_events),
+        "message": message
+    })
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required

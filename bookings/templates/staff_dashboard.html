@@ -1,0 +1,113 @@
+
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Staff/Admin Dashboard{% endblock %}
+{% block content %}
+<div class="container" style="max-width: 900px; margin: 2rem auto;">
+    <h1>Staff/Admin Dashboard</h1>
+    <div id="calendar"></div>
+    <div id="day-details" style="margin-top:2rem; display:none;">
+        <h2>Slots for <span id="selected-date"></span></h2>
+        <ul id="slots-list"></ul>
+        <button id="add-slot-btn" class="btn btn-primary" style="margin-top:1rem;">Add Slot</button>
+        <button id="add-full-day-btn" class="btn btn-secondary" style="margin-top:1rem;">Add Full Day Slot</button>
+    </div>
+    <div id="add-slot-form-container" style="display:none; margin-top:2rem;">
+        <h3>Add Slot for <span id="form-date"></span></h3>
+        <form id="add-slot-form">
+            <label>Table:</label>
+            <input type="text" name="table" required><br>
+            <label>Start Time:</label>
+            <input type="time" name="start_time" required><br>
+            <label>Duration (minutes):</label>
+            <input type="number" name="duration" min="1" required><br>
+            <button type="submit" class="btn btn-success">Add Slot</button>
+            <button type="button" id="cancel-add-slot" class="btn btn-link">Cancel</button>
+        </form>
+    </div>
+    <div id="add-full-day-form-container" style="display:none; margin-top:2rem;">
+        <h3>Add Full Day Slot for <span id="form-full-day-date"></span></h3>
+        <form id="add-full-day-form">
+            <label>Table:</label>
+            <input type="text" name="table" required><br>
+            <button type="submit" class="btn btn-success">Add Full Day Slot</button>
+            <button type="button" id="cancel-add-full-day" class="btn btn-link">Cancel</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var slots = JSON.parse('{{ slot_events|escapejs }}');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        events: slots,
+        dateClick: function(info) {
+            var dateStr = info.dateStr;
+            document.getElementById('selected-date').textContent = dateStr;
+            showDayDetails(dateStr);
+        }
+    });
+    calendar.render();
+
+    function showDayDetails(dateStr) {
+        var daySlots = slots.filter(function(slot) {
+            return slot.start.startsWith(dateStr);
+        });
+        var list = document.getElementById('slots-list');
+        list.innerHTML = '';
+        if (daySlots.length === 0) {
+            list.innerHTML = '<li>No slots for this day.</li>';
+        } else {
+            daySlots.forEach(function(slot) {
+                var li = document.createElement('li');
+                li.textContent = slot.title + ' (' + slot.start.substring(11,16) + '-' + slot.end.substring(11,16) + ') - Table: ' + slot.extendedProps.table;
+                if (slot.extendedProps.status === 'Booked') {
+                    var cancelBtn = document.createElement('button');
+                    cancelBtn.textContent = 'Cancel';
+                    cancelBtn.className = 'btn btn-danger btn-sm';
+                    cancelBtn.onclick = function() {
+                        // TODO: AJAX cancel slot
+                        alert('Cancel booking for slot ' + slot.extendedProps.slot_id);
+                    };
+                    li.appendChild(cancelBtn);
+                } else {
+                    var bookBtn = document.createElement('button');
+                    bookBtn.textContent = 'Book';
+                    bookBtn.className = 'btn btn-success btn-sm';
+                    bookBtn.onclick = function() {
+                        // TODO: AJAX book slot
+                        alert('Book slot ' + slot.extendedProps.slot_id);
+                    };
+                    li.appendChild(bookBtn);
+                }
+                list.appendChild(li);
+            });
+        }
+        document.getElementById('day-details').style.display = 'block';
+        document.getElementById('form-date').textContent = dateStr;
+        document.getElementById('form-full-day-date').textContent = dateStr;
+    }
+
+    document.getElementById('add-slot-btn').onclick = function() {
+        document.getElementById('add-slot-form-container').style.display = 'block';
+        document.getElementById('add-full-day-form-container').style.display = 'none';
+    };
+    document.getElementById('add-full-day-btn').onclick = function() {
+        document.getElementById('add-full-day-form-container').style.display = 'block';
+        document.getElementById('add-slot-form-container').style.display = 'none';
+    };
+    document.getElementById('cancel-add-slot').onclick = function() {
+        document.getElementById('add-slot-form-container').style.display = 'none';
+    };
+    document.getElementById('cancel-add-full-day').onclick = function() {
+        document.getElementById('add-full-day-form-container').style.display = 'none';
+    };
+    // TODO: AJAX for add slot/full day slot
+});
+</script>
+{% endblock %}
