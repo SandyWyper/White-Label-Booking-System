@@ -8,7 +8,7 @@ from django.views.decorators.http import require_http_methods
 from django.utils import timezone
 from django.db import transaction
 from datetime import datetime
-from .models import BookingTimeSlot, Booking
+from .models import BookingTimeSlot, Booking, BookableItem
 import json
 
 # Staff dashboard: calendar and slot management
@@ -402,7 +402,7 @@ def staff_book_slot(request):
         }, status=500)
 
 
-# Update your existing staff_dashboard view to this:
+
 @user_passes_test(lambda u: u.is_staff)
 def staff_dashboard(request):
     from .models import BookableItem, BookingTimeSlot, Booking
@@ -443,3 +443,98 @@ def staff_dashboard(request):
     return render(request, "staff_dashboard.html", {
         "slot_events": json.dumps(slot_events)
     })
+
+@user_passes_test(lambda u: u.is_staff)
+@csrf_exempt
+@require_http_methods(["POST"])
+def staff_create_template_slots(request):
+    """
+    Staff can create multiple time slots from a template
+    """
+    try:
+        data = json.loads(request.body)
+        slots_data = data.get('slots', [])
+        
+        if not slots_data:
+            return JsonResponse({
+                'success': False,
+                'error': 'No slots data provided'
+            }, status=400)
+        
+        created_slots = []
+        skipped_slots = []
+        
+        # Use transaction to ensure all slots are created or none
+        with transaction.atomic():
+            for slot_data in slots_data:
+                table_name = slot_data.get('table', '').strip()
+                date_str = slot_data.get('date')
+                start_time = slot_data.get('start_time')
+                duration_minutes = slot_data.get('duration', 60)
+                
+                if not all([table_name, date_str, start_time]):
+                    continue  # Skip invalid slots
+                
+                # Get or create the bookable item
+                bookable_item, created = BookableItem.objects.get_or_create(
+                    name=table_name,
+                    defaults={
+                        'capacity': 1,
+                        'info': f'Created via staff template',
+                        'is_active': True
+                    }
+                )
+                
+                # Parse the datetime
+                try:
+                    datetime_str = f"{date_str}T{start_time}"
+                    start_datetime = datetime.fromisoformat(datetime_str)
+                    if timezone.is_naive(start_datetime):
+                        start_datetime = timezone.make_aware(start_datetime)
+                except ValueError:
+                    continue  # Skip invalid datetime
+                
+                # Create duration
+                from datetime import timedelta
+                duration = timedelta(minutes=int(duration_minutes))
+                
+                # Check if slot already exists at this time
+                existing_slot = BookingTimeSlot.objects.filter(
+                    bookable_item=bookable_item,
+                    time_start=start_datetime
+                ).first()
+                
+                if existing_slot:
+                    skipped_slots.append(f"{table_name} at {start_time}")
+                    continue
+                
+                # Create the new slot
+                new_slot = BookingTimeSlot.objects.create(
+                    bookable_item=bookable_item,
+                    time_start=start_datetime,
+                    time_length=duration,
+                    status='available'
+                )
+                created_slots.append(new_slot)
+        
+        message = f'Created {len(created_slots)} slots successfully'
+        if skipped_slots:
+            message += f'. Skipped {len(skipped_slots)} existing slots'
+        
+        return JsonResponse({
+            'success': True,
+            'message': message,
+            'created_count': len(created_slots),
+            'skipped_count': len(skipped_slots)
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON data'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'An error occurred: {str(e)}'
+        }, status=500)
