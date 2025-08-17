@@ -1,41 +1,57 @@
-
 {% extends "base.html" %}
 {% load static %}
 {% block title %}Staff/Admin Dashboard{% endblock %}
 {% block content %}
 <div class="container" style="max-width: 900px; margin: 2rem auto;">
     <h1>Staff/Admin Dashboard</h1>
+    
+    <!-- Alert Messages -->
+    <div id="alert-message" style="display: none; padding: 10px; margin-bottom: 20px; border-radius: 4px;"></div>
+    
     <div id="calendar"></div>
+    
     <div id="day-details" style="margin-top:2rem; display:none;">
         <h2>Slots for <span id="selected-date"></span></h2>
-        <ul id="slots-list"></ul>
-        <button id="add-slot-btn" class="btn btn-primary" style="margin-top:1rem;">Add Slot</button>
-        <button id="add-full-day-btn" class="btn btn-secondary" style="margin-top:1rem;">Add Full Day Slot</button>
+        <ul id="slots-list" style="list-style: none; padding: 0;"></ul>
+        <button id="add-slot-btn" style="margin-top:1rem; padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer;">Add New Slot</button>
+        <button id="add-full-day-btn" style="margin-top:1rem; padding: 10px 20px; background: #6c757d; color: white; border: none; cursor: pointer;">Add Full Day Slot</button>
     </div>
-    <div id="add-slot-form-container" style="display:none; margin-top:2rem;">
+    
+    <div id="add-slot-form-container" style="display:none; margin-top:2rem; padding: 20px; background: #f8f9fa; border-radius: 8px;">
         <h3>Add Slot for <span id="form-date"></span></h3>
         <form id="add-slot-form">
-            <label>Table:</label>
-            <input type="text" name="table" required><br>
-            <label>Start Time:</label>
-            <input type="time" name="start_time" required><br>
-            <label>Duration (minutes):</label>
-            <input type="number" name="duration" min="1" required><br>
-            <button type="submit" class="btn btn-success">Add Slot</button>
-            <button type="button" id="cancel-add-slot" class="btn btn-link">Cancel</button>
+            <div style="margin-bottom: 15px;">
+                <label>Table/Item Name:</label><br>
+                <input type="text" name="table" required style="width: 100%; padding: 8px; margin-top: 5px;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label>Start Time:</label><br>
+                <input type="time" name="start_time" required style="width: 100%; padding: 8px; margin-top: 5px;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label>Duration (minutes):</label><br>
+                <input type="number" name="duration" min="1" value="60" required style="width: 100%; padding: 8px; margin-top: 5px;">
+            </div>
+            <button type="submit" style="padding: 10px 20px; background: #28a745; color: white; border: none; cursor: pointer;">Add Slot</button>
+            <button type="button" id="cancel-add-slot" style="padding: 10px 20px; background: none; color: #007bff; border: none; cursor: pointer;">Cancel</button>
         </form>
     </div>
-    <div id="add-full-day-form-container" style="display:none; margin-top:2rem;">
+    
+    <div id="add-full-day-form-container" style="display:none; margin-top:2rem; padding: 20px; background: #f8f9fa; border-radius: 8px;">
         <h3>Add Full Day Slot for <span id="form-full-day-date"></span></h3>
+        <p style="color: #6c757d; font-size: 14px;">This will create a slot from 9:00 AM to 5:00 PM (8 hours)</p>
         <form id="add-full-day-form">
-            <label>Table:</label>
-            <input type="text" name="table" required><br>
-            <button type="submit" class="btn btn-success">Add Full Day Slot</button>
-            <button type="button" id="cancel-add-full-day" class="btn btn-link">Cancel</button>
+            <div style="margin-bottom: 15px;">
+                <label>Table/Item Name:</label><br>
+                <input type="text" name="table" required style="width: 100%; padding: 8px; margin-top: 5px;">
+            </div>
+            <button type="submit" style="padding: 10px 20px; background: #28a745; color: white; border: none; cursor: pointer;">Add Full Day Slot</button>
+            <button type="button" id="cancel-add-full-day" style="padding: 10px 20px; background: none; color: #007bff; border: none; cursor: pointer;">Cancel</button>
         </form>
     </div>
 </div>
 {% endblock %}
+
 {% block extra_js %}
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
@@ -54,60 +70,231 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     calendar.render();
 
+    // Show alert messages
+    function showAlert(message, type = 'success') {
+        const alertDiv = document.getElementById('alert-message');
+        alertDiv.style.backgroundColor = type === 'success' ? '#d4edda' : '#f8d7da';
+        alertDiv.style.color = type === 'success' ? '#155724' : '#721c24';
+        alertDiv.style.border = type === 'success' ? '1px solid #c3e6cb' : '1px solid #f5c6cb';
+        alertDiv.textContent = message;
+        alertDiv.style.display = 'block';
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            alertDiv.style.display = 'none';
+        }, 5000);
+    }
+
     function showDayDetails(dateStr) {
         var daySlots = slots.filter(function(slot) {
             return slot.start.startsWith(dateStr);
         });
+        
         var list = document.getElementById('slots-list');
         list.innerHTML = '';
+        
         if (daySlots.length === 0) {
             list.innerHTML = '<li>No slots for this day.</li>';
         } else {
             daySlots.forEach(function(slot) {
                 var li = document.createElement('li');
-                li.textContent = slot.title + ' (' + slot.start.substring(11,16) + '-' + slot.end.substring(11,16) + ') - Table: ' + slot.extendedProps.table;
-                if (slot.extendedProps.status === 'Booked') {
+                li.style.cssText = 'border: 1px solid #ddd; padding: 15px; margin: 10px 0; background: #f9f9f9;';
+                
+                var isBooked = slot.extendedProps.is_booked;
+                var statusText = isBooked ? 'BOOKED' : 'AVAILABLE';
+                var statusColor = isBooked ? 'red' : 'green';
+                
+                var userInfo = slot.extendedProps.booking_user ? 
+                    ` (Customer: ${slot.extendedProps.booking_user})` : '';
+                
+                var timeRange = slot.start.substring(11,16) + ' - ' + slot.end.substring(11,16);
+                
+                li.innerHTML = `
+                    <div style="margin-bottom: 10px;">
+                        <strong>${slot.extendedProps.table}</strong> | ${timeRange} | 
+                        <span style="color: ${statusColor}; font-weight: bold;">${statusText}</span>${userInfo}
+                    </div>
+                `;
+                
+                // Add action buttons
+                if (isBooked) {
                     var cancelBtn = document.createElement('button');
-                    cancelBtn.textContent = 'Cancel';
-                    cancelBtn.className = 'btn btn-danger btn-sm';
+                    cancelBtn.textContent = 'Cancel This Booking';
+                    cancelBtn.style.cssText = 'background: #dc3545; color: white; border: none; padding: 8px 16px; cursor: pointer; border-radius: 4px;';
                     cancelBtn.onclick = function() {
-                        // TODO: AJAX cancel slot
-                        alert('Cancel booking for slot ' + slot.extendedProps.slot_id);
+                        var customerName = slot.extendedProps.booking_user || 'Unknown';
+                        if (confirm(`Cancel booking for ${customerName} at ${timeRange} for ${slot.extendedProps.table}?`)) {
+                            cancelBooking(slot.extendedProps.slot_id);
+                        }
                     };
                     li.appendChild(cancelBtn);
                 } else {
                     var bookBtn = document.createElement('button');
-                    bookBtn.textContent = 'Book';
-                    bookBtn.className = 'btn btn-success btn-sm';
+                    bookBtn.textContent = 'Book for Walk-in';
+                    bookBtn.style.cssText = 'background: #28a745; color: white; border: none; padding: 8px 16px; cursor: pointer; border-radius: 4px;';
                     bookBtn.onclick = function() {
-                        // TODO: AJAX book slot
-                        alert('Book slot ' + slot.extendedProps.slot_id);
+                        var customerName = prompt(`Booking ${slot.extendedProps.table} for ${timeRange}.\nEnter customer name (or leave blank):`);
+                        if (customerName !== null) { // User didn't click cancel
+                            bookSlotForCustomer(slot.extendedProps.slot_id, customerName || 'Walk-in');
+                        }
                     };
                     li.appendChild(bookBtn);
                 }
+                
                 list.appendChild(li);
             });
         }
+        
         document.getElementById('day-details').style.display = 'block';
         document.getElementById('form-date').textContent = dateStr;
         document.getElementById('form-full-day-date').textContent = dateStr;
     }
 
+    // Cancel booking function
+    function cancelBooking(slotId) {
+        fetch('/bookings/staff-cancel-booking/', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                slot_id: slotId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert(data.message, 'success');
+                location.reload(); // Refresh to update calendar
+            } else {
+                showAlert(data.error, 'danger');
+            }
+        })
+        .catch(error => {
+            showAlert('An error occurred: ' + error.message, 'danger');
+        });
+    }
+
+    // Book slot for customer function
+    function bookSlotForCustomer(slotId, customerName) {
+        fetch('/bookings/staff-book-slot/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                slot_id: slotId,
+                customer_name: customerName
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert(`Booked for ${customerName}!`, 'success');
+                location.reload(); // Refresh to update calendar
+            } else {
+                showAlert(data.error, 'danger');
+            }
+        })
+        .catch(error => {
+            showAlert('An error occurred: ' + error.message, 'danger');
+        });
+    }
+
+    // Form handlers
     document.getElementById('add-slot-btn').onclick = function() {
         document.getElementById('add-slot-form-container').style.display = 'block';
         document.getElementById('add-full-day-form-container').style.display = 'none';
     };
+    
     document.getElementById('add-full-day-btn').onclick = function() {
         document.getElementById('add-full-day-form-container').style.display = 'block';
         document.getElementById('add-slot-form-container').style.display = 'none';
     };
+    
     document.getElementById('cancel-add-slot').onclick = function() {
         document.getElementById('add-slot-form-container').style.display = 'none';
+        document.getElementById('add-slot-form').reset();
     };
+    
     document.getElementById('cancel-add-full-day').onclick = function() {
         document.getElementById('add-full-day-form-container').style.display = 'none';
+        document.getElementById('add-full-day-form').reset();
     };
-    // TODO: AJAX for add slot/full day slot
+
+    // Add slot form submission
+    document.getElementById('add-slot-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        var formData = new FormData(this);
+        var selectedDate = document.getElementById('form-date').textContent;
+        
+        var data = {
+            table: formData.get('table'),
+            date: selectedDate,
+            start_time: formData.get('start_time'),
+            duration: parseInt(formData.get('duration'))
+        };
+        
+        fetch('/bookings/staff-create-slot/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert(data.message, 'success');
+                document.getElementById('add-slot-form-container').style.display = 'none';
+                this.reset();
+                location.reload(); // Refresh to show new slot
+            } else {
+                showAlert(data.error, 'danger');
+            }
+        })
+        .catch(error => {
+            showAlert('An error occurred: ' + error.message, 'danger');
+        });
+    });
+
+    // Add full day slot form submission  
+    document.getElementById('add-full-day-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        var formData = new FormData(this);
+        var selectedDate = document.getElementById('form-full-day-date').textContent;
+        
+        var data = {
+            table: formData.get('table'),
+            date: selectedDate,
+            start_time: '09:00',
+            duration: 480 // 8 hours in minutes
+        };
+        
+        fetch('/bookings/staff-create-slot/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('Full day slot created successfully!', 'success');
+                document.getElementById('add-full-day-form-container').style.display = 'none';
+                this.reset();
+                location.reload(); // Refresh to show new slot
+            } else {
+                showAlert(data.error, 'danger');
+            }
+        })
+        .catch(error => {
+            showAlert('An error occurred: ' + error.message, 'danger');
+        });
+    });
 });
 </script>
 {% endblock %}
