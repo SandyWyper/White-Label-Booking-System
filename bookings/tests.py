@@ -21,7 +21,7 @@ class BookingAppTests(TestCase):
     def test_user_can_book_slot(self):
         self.client.login(username='testuser', password='testpass')
         response = self.client.post(
-            reverse('bookings:book_time_slot'),
+            reverse('book_time_slot'),
             data=json.dumps({'slot_id': self.slot.id}),
             content_type='application/json'
         )
@@ -33,7 +33,7 @@ class BookingAppTests(TestCase):
     def test_admin_can_view_bookings(self):
         Booking.objects.create(user=self.admin, time_slot=self.slot)
         self.client.login(username='admin', password='adminpass')
-        response = self.client.get(reverse('bookings:user_bookings'))
+        response = self.client.get(reverse('user_bookings'))
         # print(response.content.decode())
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'user-bookings.html')
