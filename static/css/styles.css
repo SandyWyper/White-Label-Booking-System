@@ -1,4 +1,26 @@
 /* Staff Dashboard Styles */
+:root {
+    --dashboard-font-size: 16px;
+    --dashboard-font-family: 'Segoe UI', Arial, sans-serif;
+    --dashboard-radius: 4px;
+    --dashboard-bg: #f9f9f9;
+    --dashboard-border: 1px solid #ddd;
+    --dashboard-color: #333;
+    --dashboard-muted: #666;
+    --dashboard-success: #28a745;
+    --dashboard-danger: #dc3545;
+    --dashboard-primary: #007bff;
+    --dashboard-secondary: #6c757d;
+    --dashboard-white: #fff;
+}
+
+body {
+    font-size: var(--dashboard-font-size);
+    font-family: var(--dashboard-font-family);
+    color: var(--dashboard-color);
+    background: var(--dashboard-bg);
+}
+
 .staff-dashboard-container {
     max-width: 900px;
     margin: 2rem auto;
@@ -8,12 +30,12 @@
     display: none;
     padding: 10px;
     margin-bottom: 20px;
-    border-radius: 4px;
+    border-radius: var(--dashboard-radius);
 }
 
 .dashboard-calendar {
     margin-bottom: 2rem;
-    background: #fff;
+    background: var(--dashboard-white);
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     padding: 1rem;
@@ -35,7 +57,7 @@
     z-index: 1000;
 }
 .dashboard-modal-content {
-    background: white;
+    background: var(--dashboard-white);
     margin: 5% auto;
     padding: 20px;
     width: 80%;
@@ -49,7 +71,7 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
-    border-bottom: 1px solid #ddd;
+    border-bottom: var(--dashboard-border);
     padding-bottom: 10px;
 }
 .dashboard-modal-close {
@@ -68,11 +90,11 @@
 }
 .dashboard-delete-all {
     padding: 8px 16px;
-    background: #dc3545;
-    color: white;
+    background: var(--dashboard-danger);
+    color: var(--dashboard-white);
     border: none;
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: var(--dashboard-radius);
     font-size: 12px;
 }
 .dashboard-slots-list {
@@ -81,11 +103,11 @@
     margin-bottom: 20px;
 }
 .dashboard-slot-listitem {
-    border: 1px solid #ddd;
+    border: var(--dashboard-border);
     padding: 15px;
     margin: 10px 0;
-    background: #f9f9f9;
-    border-radius: 4px;
+    background: var(--dashboard-bg);
+    border-radius: var(--dashboard-radius);
 }
 .dashboard-slot-listitem-inner {
     display: flex;
@@ -93,58 +115,58 @@
     align-items: center;
 }
 .dashboard-slot-status-booked {
-    color: #dc3545;
+    color: var(--dashboard-danger);
     font-weight: bold;
     font-size: 12px;
 }
 .dashboard-slot-status-available {
-    color: #28a745;
+    color: var(--dashboard-success);
     font-weight: bold;
     font-size: 12px;
 }
 .dashboard-slot-userinfo,
 .dashboard-slot-timerange {
-    color: #666;
+    color: var(--dashboard-muted);
 }
 .dashboard-slot-action-btn {
-    background: #6c757d;
-    color: white;
+    background: var(--dashboard-secondary);
+    color: var(--dashboard-white);
     border: none;
     padding: 6px 12px;
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: var(--dashboard-radius);
     font-size: 12px;
     margin-right: 5px;
 }
 .dashboard-slot-action-btn.book {
-    background: #28a745;
+    background: var(--dashboard-success);
 }
 .dashboard-slot-action-btn.cancel {
-    background: #dc3545;
+    background: var(--dashboard-danger);
 }
 
 /* Form & Template Styles */
 .dashboard-action-buttons {
     margin-bottom: 20px;
-    border-top: 1px solid #ddd;
+    border-top: var(--dashboard-border);
     padding-top: 15px;
 }
 .dashboard-add-slot {
     margin-right: 10px;
     padding: 10px 20px;
-    background: #007bff;
-    color: white;
+    background: var(--dashboard-primary);
+    color: var(--dashboard-white);
     border: none;
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: var(--dashboard-radius);
 }
 .dashboard-use-template {
     padding: 10px 20px;
-    background: #6c757d;
-    color: white;
+    background: var(--dashboard-secondary);
+    color: var(--dashboard-white);
     border: none;
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: var(--dashboard-radius);
 }
 .dashboard-form-container {
     display: none;
@@ -164,39 +186,39 @@
     padding: 8px;
     margin-top: 5px;
     border: 1px solid #ccc;
-    border-radius: 4px;
+    border-radius: var(--dashboard-radius);
 }
 .dashboard-submit {
     padding: 10px 20px;
-    background: #28a745;
-    color: white;
+    background: var(--dashboard-success);
+    color: var(--dashboard-white);
     border: none;
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: var(--dashboard-radius);
     margin-right: 10px;
 }
 .dashboard-cancel {
     padding: 10px 20px;
     background: none;
-    color: #007bff;
-    border: 1px solid #007bff;
+    color: var(--dashboard-primary);
+    border: 1px solid var(--dashboard-primary);
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: var(--dashboard-radius);
 }
 .dashboard-manage-templates {
     padding: 8px 12px;
-    background: #6c757d;
-    color: white;
+    background: var(--dashboard-secondary);
+    color: var(--dashboard-white);
     border: none;
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: var(--dashboard-radius);
     white-space: nowrap;
 }
 .dashboard-custom-template-settings {
     display: none;
-    border: 1px solid #ddd;
+    border: var(--dashboard-border);
     padding: 15px;
-    border-radius: 4px;
+    border-radius: var(--dashboard-radius);
     margin-bottom: 15px;
 }
 .dashboard-template-select-row {
@@ -217,11 +239,11 @@
     margin-bottom: 20px;
 }
 .dashboard-template-listitem {
-    border: 1px solid #ddd;
+    border: var(--dashboard-border);
     padding: 15px;
     margin: 10px 0;
-    border-radius: 4px;
-    background: #f9f9f9;
+    border-radius: var(--dashboard-radius);
+    background: var(--dashboard-bg);
 }
 .dashboard-template-listitem-inner {
     display: flex;
@@ -229,17 +251,17 @@
     align-items: center;
 }
 .dashboard-template-delete-btn {
-    background: #dc3545;
-    color: white;
+    background: var(--dashboard-danger);
+    color: var(--dashboard-white);
     border: none;
     padding: 6px 12px;
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: var(--dashboard-radius);
     font-size: 12px;
 }
 .dashboard-no-templates {
     text-align: center;
-    color: #666;
+    color: var(--dashboard-muted);
     font-style: italic;
     display: none;
 }
