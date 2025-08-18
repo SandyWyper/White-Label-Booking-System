@@ -11,23 +11,24 @@
 @source "../../../**/*.{html,py,js}";
 
 @plugin "daisyui" {
-  /* themes: light --default, dim --prefersdark; */
-  themes: light --default;
-  root: ":root";
+  /* themes: light --default; */
+  themes: light --default, dim --prefersdark, coffee, winter, pastel, dracula,
+    business, acid, cyberpunk, cupcake, forest, halloween, midnight, night,
+    retro, silk, lemonade, nord;
+  /* root: ":root";
   include: ;
   exclude: ;
   prefix: ;
-  logs: true;
+  logs: true; */
 }
 
 /* Daisy UI theme overrides */
-@plugin "daisyui/theme" {
+/* @plugin "daisyui/theme" {
   name: "light";
   default: true;
-  /* --color-primary: red;
-  --color-secondary: teal; */
+
   --alert-color: #60d960;
-}
+} */
 
 /* Typography base styles */
 
