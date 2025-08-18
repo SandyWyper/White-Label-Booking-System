@@ -2,11 +2,26 @@
 .slot-dot {
     display: block;
     margin: 0 auto;
-    width: 10px;
-    height: 10px;
+    width: 20px;
+    height: 20px;
     background: #007bff;
     border-radius: 50%;
+    z-index: 2;
 }
+/* Hide FullCalendar event background for dot-only events */
+.fc-daygrid-event {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    min-width: 0 !important;
+    height: auto !important;
+}
+/* Optional: Remove event text if any */
+.fc-daygrid-event .fc-event-title {
+    display: none !important;
+}
+
 /* Staff Dashboard Styles */
 :root {
     --dashboard-font-size: 16px;
