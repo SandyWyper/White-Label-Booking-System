@@ -1,4 +1,5 @@
 {% load static %}
+{% load static tailwind_tags %}
 {% url 'account_login' as login_url %}
 {% url 'account_signup' as signup_url %}
 {% url 'account_logout' as logout_url %}
@@ -12,7 +13,8 @@
     </title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'css/datepicker.material.css' %}">
-    <script src="{% static 'js/datepicker.js' %}"></script>
+    {% tailwind_css %}
+    <script src="{% static 'js/datepicker.js' %}" defer></script>
     {% block extra_css %}{% endblock %}
   </head>
   <body>
@@ -21,7 +23,7 @@
       <div>
         <div>
           <div>
-            <a href="{% url 'home' %}">Booking home</a>
+            <a href="{% url 'home' %}" class="text-2xl font-bold">Booking home</a>
           </div>
           <ul>
             {% if user.is_authenticated %}

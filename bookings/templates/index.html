@@ -1,10 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-    <div style="display: flex;
-                flex-direction: row;
-                gap: 3rem;
-                justify-content: center;
-                height: 500px">
+    <div>
         <div>
             <h1>Bookings</h1>
             <label for="choose-date">Choose Date</label>
@@ -13,7 +9,8 @@
                    placeholder="Choose date"
                    style="width: 200px;
                           height: 30px"
-                   data-id="datetime">
+                   data-id="datetime"
+                   autocomplete="off">
         </div>
         <div>
             <!-- // bookings slots -->
