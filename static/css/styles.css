@@ -1,3 +1,12 @@
+/* Calendar slot indicator dot */
+.slot-dot {
+    display: block;
+    margin: 0 auto;
+    width: 10px;
+    height: 10px;
+    background: #007bff;
+    border-radius: 50%;
+}
 /* Staff Dashboard Styles */
 :root {
     --dashboard-font-size: 16px;

@@ -169,14 +169,29 @@ document.addEventListener('DOMContentLoaded', function() {
         return document.querySelector('[name=csrfmiddlewaretoken]').value;
     }
     var calendarEl = document.getElementById('calendar');
+
+
+    // Use slot_dates for calendar icons, slot_events for modal details
+    var slotDates = JSON.parse('{{ slot_dates|escapejs }}');
     var slots = JSON.parse('{{ slot_events|escapejs }}');
+
+    var calendarEvents = slotDates.map(function(dateStr) {
+        return {
+            start: dateStr,
+            allDay: true
+        };
+    });
+
     var calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
-        events: slots,
+        events: calendarEvents,
+        eventContent: function(arg) {
+            // Show a dot icon for days with slots
+            return { html: '<span class="slot-dot"></span>' };
+        },
         dateClick: function(info) {
-            var dateStr = info.dateStr;
-            document.getElementById('selected-date').textContent = dateStr;
-            showDayModal(dateStr);
+            document.getElementById('selected-date').textContent = info.dateStr;
+            showDayModal(info.dateStr);
         }
     });
     calendar.render();
