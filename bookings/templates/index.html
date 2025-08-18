@@ -5,12 +5,23 @@
             <h1>Make a Booking</h1>
             <div class="flex flex-col gap-2 mb-6">
                 <label for="choose-date" class="label">Choose Date</label>
-                <input id="choose-date"
-                       type="text"
-                       placeholder="Choose date"
-                       class="input cursor-pointer"
-                       data-id="datetime"
-                       autocomplete="off">
+                <calendar-date class="cally bg-base-100 shadow-md w-full max-w-md text-xl border border-base-300 rounded-box" id="choose-date">
+                <svg aria-label="Previous"
+                     class="fill-current size-4"
+                     slot="previous"
+                     xmlns="http://www.w3.org/2000/svg"
+                     viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M15.75 19.5 8.25 12l7.5-7.5"></path>
+                </svg>
+                <svg aria-label="Next"
+                     class="fill-current size-4"
+                     slot="next"
+                     xmlns="http://www.w3.org/2000/svg"
+                     viewBox="0 0 24 24">
+                    <path fill="currentColor" d="m8.25 4.5 7.5 7.5-7.5 7.5"></path>
+                </svg>
+                <calendar-month></calendar-month>
+                </calendar-date>
             </div>
         </div>
         <div class="w-full md:w-1/2">
@@ -24,19 +35,12 @@
     <script>
     document.addEventListener("DOMContentLoaded", function() {
         let globalSelectedDate = null;
-        // Initialize the datepicker
-        var datepicker = new Datepicker('#choose-date', {
-            inline: false,
-            onChange: function(selectedDate) {
-                // Handle date selection
-                // You can add AJAX call here to update booking slots
-                if (selectedDate) {
-                console.log('Date selected:', selectedDate);
-                globalSelectedDate = selectedDate;
-                updateBookingSlots(selectedDate);
-                }
-            }
+        document.getElementById('choose-date').addEventListener('change', function(event) {  
+            const selectedDate = event.target.value;
+            globalSelectedDate = selectedDate;
+            updateBookingSlots(selectedDate);
         });
+
         
         function updateBookingSlots(selectedDate) {
             // update the date in the h3
@@ -49,7 +53,6 @@
         function parseDate(date) {
             return new Date(date).getFullYear() + '-' + (new Date(date).getMonth() +1)  + '-' + new Date(date).getDate();
         }
-
 
         async function loadSection(url, targetId) {
             try {

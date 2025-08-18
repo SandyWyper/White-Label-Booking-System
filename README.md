@@ -87,6 +87,41 @@ This project is a white-label booking system designed to be easily integrated ("
 
 ## Testing & Validation
 
+Unit tests include:
+
+# User Tests:
+
+Viewing booking pages
+Booking available slots
+Viewing personal bookings
+Cancelling bookings
+
+# Admin Tests:
+
+Accessing staff dashboard
+Creating time slots
+Cancelling user bookings
+Booking for customers
+Deleting slots
+
+# Guest Tests:
+
+Limited access to public pages
+Prevented access to protected features
+
+# Edge Cases:
+
+Booking already booked slots
+Non-existent resources
+Invalid data formats
+Permission violations
+Duplicate creations
+Missing required data
+
+Run with: python3 manage.py test bookings
+
+# Validation
+
 - HTML
 - CSS
 - PY
