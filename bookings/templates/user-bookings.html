@@ -26,7 +26,7 @@ function deleteBooking(button, bookingId) {
     if (confirm('Are you sure you want to cancel this booking?')) {
         button.disabled = true;
         button.textContent = 'Cancelling...';
-        fetch('/bookings/user-bookings/', {
+        fetch('/user-bookings/', {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',

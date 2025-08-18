@@ -333,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     function deleteAllSlotsForDay(date) {
-        fetch('/bookings/delete-all-slots-for-day/', {
+        fetch('/delete-all-slots-for-day/', {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -416,7 +416,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     function loadSavedTemplates() {
-        fetch('/bookings/get-saved-templates/')
+        fetch('/get-saved-templates/')
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -480,7 +480,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window.deleteTemplate = function(templateId) {
         if (confirm('Delete this template?')) {
-            fetch('/bookings/delete-template/', {
+            fetch('/delete-template/', {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
@@ -507,7 +507,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Basic functions (keeping them simple)
     function deleteSlot(slotId) {
-        fetch('/bookings/delete-slot/', {
+        fetch('/delete-slot/', {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -532,7 +532,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function cancelBooking(slotId) {
-        fetch('/bookings/staff-cancel-booking/', {
+        fetch('/staff-cancel-booking/', {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -557,7 +557,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function bookSlotForCustomer(slotId, customerName) {
-        fetch('/bookings/staff-book-slot/', {
+        fetch('/staff-book-slot/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -596,7 +596,7 @@ document.addEventListener('DOMContentLoaded', function() {
             duration: parseInt(formData.get('duration'))
         };
         
-        fetch('/bookings/staff-create-slot/', {
+        fetch('/staff-create-slot/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -666,7 +666,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function saveCustomTemplate(templateName, templateData) {
-        fetch('/bookings/save-template/', {
+        fetch('/save-template/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -735,7 +735,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         // Send batch create request
-        fetch('/bookings/staff-create-template-slots/', {
+        fetch('/staff-create-template-slots/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
