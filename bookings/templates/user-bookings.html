@@ -8,7 +8,7 @@
                 <p>Length: {{ booking.time_slot.time_length }}</p>
                 {% if booking.notes %}<p>Notes: {{ booking.notes }}</p>{% endif %}
                 <button data-booking-id="{{ booking.id }}"
-                        onclick="deleteBooking({{ booking.id }})"
+                        onclick="deleteBooking(this, {{ booking.id }})"
                         style="background-color: #dc3545;
                                color: white;
                                border: none;
@@ -20,16 +20,11 @@
     </div>
 </div>
 <script>
-
-
-function deleteBooking(bookingId) {
-
+function deleteBooking(button, bookingId) {
     if (confirm('Are you sure you want to cancel this booking?')) {
-        // Disable button during request
-        this.disabled = true;
-        this.textContent = 'Cancelling...';
-        
-        fetch('/user-bookings/', {
+        button.disabled = true;
+        button.textContent = 'Cancelling...';
+        fetch('/bookings/user-bookings/', {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -38,33 +33,32 @@ function deleteBooking(bookingId) {
                 booking_id: bookingId
             })
         })
-        .then(response => response.json())
-        .then(data => {
+        .then(async response => {
+            let data;
+            try {
+                data = await response.json();
+            } catch (e) {
+                const text = await response.text();
+                console.error('Non-JSON response:', text);
+                alert('Error: Server did not return JSON. You may not be logged in or there was a server error.');
+                button.disabled = false;
+                button.textContent = 'Cancel Booking';
+                return;
+            }
             if (data.success) {
-                //TODO: add success taost message
-            
-                // update the user bookings section & the available time slots section
                 document.dispatchEvent(new CustomEvent('booking-cancelled'));
             } else {
-                // Show error message
                 alert('Error: ' + data.error);
-                
-                // Re-enable button
-                this.disabled = false;
-                this.textContent = 'Cancel Booking';
+                button.disabled = false;
+                button.textContent = 'Cancel Booking';
             }
         })
         .catch(error => {
             console.error('Error:', error);
             alert('An error occurred while cancelling the booking.');
-            
-            // Re-enable button
-            this.disabled = false;
-            this.textContent = 'Cancel Booking';
+            button.disabled = false;
+            button.textContent = 'Cancel Booking';
         });
     }
-
 }
-
-
 </script>
