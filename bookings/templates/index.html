@@ -1,23 +1,21 @@
 {% extends "base.html" %}
 {% block content %}
-    <div>
-        <div>
-            <h1>Bookings</h1>
-            <label for="choose-date">Choose Date</label>
-            <input id="choose-date"
-                   type="text"
-                   placeholder="Choose date"
-                   style="width: 200px;
-                          height: 30px"
-                   data-id="datetime"
-                   autocomplete="off">
-        </div>
-        <div>
-            <!-- // bookings slots -->
-            <h3 id="bookings-date">1/10/25</h3>
-            <div id="bookings-slots" style="border: 1px solid black; padding: 1rem; ">
-                {% include "available-time-slots.html" %}
+    <div class="flex flex-col gap-6 md:flex-row">
+        <div class="w-full md:w-1/2">
+            <h1>Make a Booking</h1>
+            <div class="flex flex-col gap-2 mb-6">
+                <label for="choose-date" class="label">Choose Date</label>
+                <input id="choose-date"
+                       type="text"
+                       placeholder="Choose date"
+                       class="input cursor-pointer"
+                       data-id="datetime"
+                       autocomplete="off">
             </div>
+        </div>
+        <div class="w-full md:w-1/2">
+            <!-- // bookings slots -->
+            <div id="bookings-slots">{% include "available-time-slots.html" %}</div>
         </div>
     </div>
     <div id="user-bookings-section">{% include "user-bookings.html" %}</div>

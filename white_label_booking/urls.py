@@ -23,8 +23,8 @@ from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
-    path('', views.home, name='home'),
-    path('bookings/', include("bookings.urls")),
+    # path('', views.home, name='home'),
+    path('', include("bookings.urls")),
 ]
 
 if settings.DEBUG:
