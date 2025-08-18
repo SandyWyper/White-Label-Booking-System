@@ -12,23 +12,23 @@
       {% block title %}{% endblock %}
     </title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <link rel="stylesheet" href="{% static 'css/datepicker.material.css' %}">
     {% tailwind_css %}
-    <script src="{% static 'js/datepicker.js' %}" defer></script>
+    <script type="module" src="https://unpkg.com/cally"></script>
+    <script src="{% static 'js/main.js' %}" defer></script>
     {% block extra_css %}{% endblock %}
   </head>
-  <body>
+  <body class="bg-base-100 text-base-content min-h-screen flex flex-col">
     <!-- Navigation -->
-    <nav class="bg-base-100 shadow-sm px-4">
+    <nav class="shadow-sm px-4 bg-base-300 text-base-content border-b border-base-900">
       <div class="container navbar mx-auto">
         <div class="flex-1">
           <a href="/" class="link link-hover text-xl">Booking home</a>
         </div>
-        <div class="flex-none">
-          <ul class="menu menu-horizontal px-1 mb-0">
+        <div class="flex-none ">
+          <ul class="menu menu-horizontal px-1 mb-0 bg-base-400 text-base-content">
             <details class="md:hidden relative cursor-pointer">
               <summary>Menu</summary>
-              <ul class="bg-base-100 rounded-t-none p-2 absolute top-10 right-0 w-max z-10 shadow-lg">
+              <ul class="rounded-t-none p-2 absolute top-10 right-0 w-max z-10 shadow-lg">
                 {% if user.is_staff %}
                   <li>
                     <a href="/staff-dashboard/">Staff Dashboard</a>
@@ -74,9 +74,39 @@
         {% for message in messages %}<div class="alert alert-{{ message.tags }}">{{ message }}</div>{% endfor %}
       </div>
     {% endif %}
-    <main class="container mx-auto px-4 py-8">
-      {% block content %}this is default block content{% endblock %}
-    </main>
-    {% block extra_js %}{% endblock %}
-  </body>
-</html>
+    <main class="bg-base-100 text-base-content flex-grow">
+      <div class="container mx-auto px-4 py-8">
+        {% block content %}this is default block content{% endblock %}
+      </main>
+      <footer class="footer footer-center p-4 bg-base-300 text-base-content border-t border-base-900 mt-auto">
+        <div>
+          <p>Copyright © 2025 - All right reserved by ACME Industries Ltd</p>
+        </div>
+        <div class="flex items-baseline ml-auto">
+          <label for="theme-controller">Theme:</label>
+          <select class="select select-secondary w-full theme-controller">
+            <option value="light">Light</option>
+            <option value="dim">Dark</option>
+            <option value="coffee">Coffee</option>
+            <option value="winter">Winter</option>
+            <option value="pastel">Pastel</option>
+            <option value="dracula">Dracula</option>
+            <option value="business">Business</option>
+            <option value="acid">Acid</option>
+            <option value="cyberpunk">Cyberpunk</option>
+            <option value="cupcake">Cupcake</option>
+            <option value="forest">Forest</option>
+            <option value="halloween">Halloween</option>
+            <option value="light">Light</option>
+            <option value="midnight">Midnight</option>
+            <option value="night">Night</option>
+            <option value="retro">Retro</option>
+            <option value="silk">Silk</option>
+            <option value="lemonade">Lemonade</option>
+            <option value="nord">Nord</option>
+          </select>
+        </div>
+      </footer>
+      {% block extra_js %}{% endblock %}
+    </body>
+  </html>
