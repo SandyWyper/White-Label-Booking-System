@@ -1,7 +1,5 @@
-{% block title %}Available Time Slots{% endblock %}
-
 {% block extra_css %}
-<style>
+    <style>
 /* Custom button hover states */
 .booking-btn:hover:not(:disabled) {
     transform: translateY(-1px);
@@ -29,111 +27,97 @@
     background-color: hsl(var(--b1));
     color: hsl(var(--bc));
 }
-</style>
+    </style>
 {% endblock %}
-
 {% block content %}
-<div class="booking-container min-h-screen">
-    <div class="flex flex-col gap-6 md:flex-row">
-        <div class="w-full md:w-1/2">
-            <h1 class="text-2xl font-bold mb-4 text-base-content">Make a Booking</h1>
-            <div class="flex flex-col gap-2 mb-6">
-                <label for="choose-date" class="label">
-                    <span class="label-text">Choose Date</span>
-                </label>
-                <input id="choose-date"
-                       type="text"
-                       placeholder="Choose date"
-                       class="input input-bordered cursor-pointer bg-base-100 text-base-content"
-                       data-id="datetime"
-                       autocomplete="off">
-            </div>
-        </div>
-        <div class="w-full md:w-1/2">
-            <!-- booking slots -->
-            <div id="bookings-slots">
+    <!-- booking slots -->
+    <div id="bookings-slots">
+        <div>
+            <h2 class="text-xl font-semibold mb-2 text-base-content">Available Time Slots</h2>
+            <h3 id="bookings-date" class="text-lg text-base-content/70 mb-4">{{ selected_date|default:"Select a date" }}</h3>
+            <!-- Booking confirmation alert -->
+            <div id="booking-confirmation" class="alert alert-success mb-4 hidden">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     class="stroke-current shrink-0 h-6 w-6"
+                     fill="none"
+                     viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
                 <div>
-                    <h2 class="text-xl font-semibold mb-2 text-base-content">Available Time Slots</h2>
-                    <h3 id="bookings-date" class="text-lg text-base-content/70 mb-4">{{ selected_date|default:"Select a date" }}</h3>
-                    
-                    <!-- Booking confirmation alert -->
-                    <div id="booking-confirmation"
-                         class="alert alert-success mb-4 hidden">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <div>
-                            <h3 class="font-bold">Booking Confirmed!</h3>
-                            <div id="confirmation-message" class="text-sm"></div>
-                        </div>
-                        <button class="btn btn-sm btn-ghost" onclick="hideConfirmation()">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div>
-                    
-                    <!-- Time slots as buttons -->
-                    <div class="space-y-3">
-                        {% for slot in slots %}
-                            {% if slot.status == 'available' %}
-                                {% if user.is_authenticated %}
-                                    <button class="btn btn-outline btn-primary time-slot-btn w-full booking-btn"
-                                            onclick="bookSlot({{ slot.id }})"
-                                            data-slot-id="{{ slot.id }}">
-                                        <div class="flex flex-col items-start">
-                                            <span class="font-medium">{{ slot.time_start|date:"H:i" }}</span>
-                                            <span class="text-sm opacity-70">{{ slot.bookable_item.name }}</span>
-                                        </div>
-                                        <span class="text-sm">Book Now</span>
-                                    </button>
-                                {% else %}
-                                    <a href="{% url 'account_login' %}" 
-                                       class="btn btn-outline btn-primary time-slot-btn w-full">
-                                        <div class="flex flex-col items-start">
-                                            <span class="font-medium">{{ slot.time_start|date:"H:i" }}</span>
-                                            <span class="text-sm opacity-70">{{ slot.bookable_item.name }}</span>
-                                        </div>
-                                        <span class="text-sm">Login to Book</span>
-                                    </a>
-                                {% endif %}
-                            {% elif slot.status == 'booked' %}
-                                <button class="btn btn-success time-slot-btn w-full booked-btn" disabled>
-                                    <div class="flex flex-col items-start">
-                                        <span class="font-medium">{{ slot.time_start|date:"H:i" }}</span>
-                                        <span class="text-sm opacity-70">{{ slot.bookable_item.name }}</span>
-                                    </div>
-                                    <div class="flex items-center gap-1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        <span class="text-sm">Booked</span>
-                                    </div>
-                                </button>
-                            {% else %}
-                                <button class="btn btn-ghost time-slot-btn w-full opacity-50" disabled>
-                                    <div class="flex flex-col items-start">
-                                        <span class="font-medium">{{ slot.time_start|date:"H:i" }}</span>
-                                        <span class="text-sm opacity-70">{{ slot.bookable_item.name }}</span>
-                                    </div>
-                                    <span class="text-sm">{{ slot.get_status_display }}</span>
-                                </button>
-                            {% endif %}
-                        {% empty %}
-                            <div class="text-center py-8">
-                                <p class="text-base-content/70">No time slots available for this date.</p>
-                            </div>
-                        {% endfor %}
-                    </div>
+                    <h3 class="font-bold">Booking Confirmed!</h3>
+                    <div id="confirmation-message" class="text-sm"></div>
                 </div>
+                <button class="btn btn-sm btn-ghost" onclick="hideConfirmation()">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         class="h-4 w-4"
+                         fill="none"
+                         viewBox="0 0 24 24"
+                         stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <!-- Time slots as buttons -->
+            <div class="space-y-3">
+                {% for slot in slots %}
+                    {% if slot.status == 'available' %}
+                        {% if user.is_authenticated %}
+                            <button class="btn btn-outline btn-primary time-slot-btn w-full booking-btn"
+                                    onclick="bookSlot({{ slot.id }})"
+                                    data-slot-id="{{ slot.id }}">
+                                <div class="flex flex-col items-start">
+                                    <span class="font-medium">{{ slot.time_start|date:"H:i" }}</span>
+                                    <span class="text-sm opacity-70">{{ slot.bookable_item.name }}</span>
+                                </div>
+                                <span class="text-sm">Book Now</span>
+                            </button>
+                        {% else %}
+                            <a href="{% url 'account_login' %}"
+                               class="btn btn-outline btn-primary time-slot-btn w-full">
+                                <div class="flex flex-col items-start">
+                                    <span class="font-medium">{{ slot.time_start|date:"H:i" }}</span>
+                                    <span class="text-sm opacity-70">{{ slot.bookable_item.name }}</span>
+                                </div>
+                                <span class="text-sm">Login to Book</span>
+                            </a>
+                        {% endif %}
+                    {% elif slot.status == 'booked' %}
+                        <button class="btn btn-success time-slot-btn w-full booked-btn" disabled>
+                            <div class="flex flex-col items-start">
+                                <span class="font-medium">{{ slot.time_start|date:"H:i" }}</span>
+                                <span class="text-sm opacity-70">{{ slot.bookable_item.name }}</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                     class="h-4 w-4"
+                                     fill="none"
+                                     viewBox="0 0 24 24"
+                                     stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                <span class="text-sm">Booked</span>
+                            </div>
+                        </button>
+                    {% else %}
+                        <button class="btn btn-ghost time-slot-btn w-full opacity-50" disabled>
+                            <div class="flex flex-col items-start">
+                                <span class="font-medium">{{ slot.time_start|date:"H:i" }}</span>
+                                <span class="text-sm opacity-70">{{ slot.bookable_item.name }}</span>
+                            </div>
+                            <span class="text-sm">{{ slot.get_status_display }}</span>
+                        </button>
+                    {% endif %}
+                {% empty %}
+                    <div class="text-center py-8">
+                        <p class="text-base-content/70">No time slots available for this date.</p>
+                    </div>
+                {% endfor %}
             </div>
         </div>
     </div>
-</div>
 {% endblock %}
-
 {% block extra_js %}
-<script>
+    <script>
 async function bookSlot(slotId) {
     const button = document.querySelector(`button[data-slot-id="${slotId}"]`);
     const originalText = button.innerHTML;
@@ -252,6 +236,5 @@ function getCookie(name) {
     }
     return cookieValue;
 }
-</script>
+    </script>
 {% endblock %}
-

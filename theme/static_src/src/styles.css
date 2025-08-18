@@ -161,3 +161,8 @@ form ul {
   list-style: disc;
   margin-bottom: 1rem;
 }
+
+/* click thropugh event dots */
+.fc-daygrid-day-events {
+  pointer-events: none;
+}

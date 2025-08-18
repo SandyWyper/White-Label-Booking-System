@@ -23,15 +23,10 @@
             <div id="current-slots-section">
                 <div class="dashboard-slots-header">
                     <h3>Current Slots</h3>
-                    <button id="delete-all-slots-btn" class="dashboard-delete-all">Delete All Slots</button>
+                    <button id="delete-all-slots-btn" class="btn btn-error">Delete All Slots</button>
                 </div>
                 <ul id="slots-list" class="dashboard-slots-list">
                 </ul>
-            </div>
-            <!-- Action Buttons -->
-            <div class="dashboard-action-buttons">
-                <button id="add-single-slot-btn" class="dashboard-add-slot">Add Single Slot</button>
-                <button id="use-day-template-btn" class="dashboard-use-template">Use Day Template</button>
             </div>
             <!-- Add Single Slot Form -->
             <div id="add-slot-form-container" class="dashboard-form-container">
@@ -41,7 +36,7 @@
                         <div>
                             <label>Table/Item Name:</label>
                             <br>
-                            <input type="text" name="table" required class="dashboard-input">
+                            <input type="text" name="table" required class="input">
                         </div>
                         <div>
                             <label>Duration (minutes):</label>
@@ -51,17 +46,17 @@
                                    min="15"
                                    value="60"
                                    required
-                                   class="dashboard-input">
+                                   class="input">
                         </div>
                     </div>
                     <div>
                         <label>Start Time:</label>
                         <br>
-                        <input type="time" name="start_time" required class="dashboard-input">
+                        <input type="time" name="start_time" required class="input mb-4">
                     </div>
                     <div>
-                        <button type="submit" class="dashboard-submit">Add Slot</button>
-                        <button type="button" id="cancel-add-slot" class="dashboard-cancel">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Slot</button>
+                        <button type="button" id="cancel-add-slot" class="btn btn-error">Cancel</button>
                     </div>
                 </form>
             </div>
@@ -74,7 +69,7 @@
                         <br>
                         <div class="dashboard-template-select-row">
                             <div class="dashboard-template-select-col">
-                                <select name="template" required class="dashboard-input">
+                                <select name="template" required class="select select-bordered mb-4">
                                     <option value="">Choose a template...</option>
                                     <option value="normal">Normal Day (5 tables, 9AM-9PM)</option>
                                     <option value="summer">Summer Day (9 tables with balcony, 9AM-10PM)</option>
@@ -82,9 +77,7 @@
                                     <option value="custom">Create New Template...</option>
                                 </select>
                             </div>
-                            <button type="button"
-                                    id="manage-templates-btn"
-                                    class="dashboard-manage-templates">Manage</button>
+                            <button type="button" id="manage-templates-btn" class="btn btn-secondary">Manage</button>
                         </div>
                     </div>
                     <!-- Custom Template Settings -->
@@ -136,10 +129,17 @@
                         </div>
                     </div>
                     <div>
-                        <button type="submit" class="dashboard-submit">Apply Template</button>
-                        <button type="button" id="cancel-day-template" class="dashboard-cancel">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Apply Template</button>
+                        <button type="button"
+                                id="cancel-day-template"
+                                class="btn btn-error btn-outline">Cancel</button>
                     </div>
                 </form>
+            </div>
+            <!-- Action Buttons -->
+            <div class="dashboard-action-buttons">
+                <button id="add-single-slot-btn" class="btn btn-primary btn-outline">Add Single Slot</button>
+                <button id="use-day-template-btn" class="btn btn-secondary btn-outline">Use Day Template</button>
             </div>
         </div>
     </div>
@@ -278,7 +278,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (isBooked) {
                     var cancelBtn = document.createElement('button');
                     cancelBtn.textContent = 'Cancel Booking';
-                    cancelBtn.style.cssText = 'background: #dc3545; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-size: 12px; margin-right: 5px;';
+                    cancelBtn.style.cssText = 'background: transparent; color: var(--color-error); border: 1px solid var(--color-error); padding: 6px 12px; cursor: pointer; border-radius: 4px; font-size: 12px; margin-right: 5px;';
+                    cancelBtn.classList.add('btn-outline');
                     cancelBtn.onclick = function() {
                         var customerName = slot.extendedProps.booking_user || 'Unknown';
                         if (confirm(`Cancel booking for ${customerName}?`)) {
@@ -289,7 +290,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     var bookBtn = document.createElement('button');
                     bookBtn.textContent = 'Book for Walk-in';
-                    bookBtn.style.cssText = 'background: #28a745; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-size: 12px; margin-right: 5px;';
+                    bookBtn.style.cssText = 'background: var(--color-success); color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-size: 12px; margin-right: 5px;';
                     bookBtn.onclick = function() {
                         var customerName = prompt(`Enter customer name:`);
                         if (customerName !== null && customerName.trim() !== '') {
@@ -301,7 +302,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 var deleteBtn = document.createElement('button');
                 deleteBtn.textContent = 'Delete Slot';
-                deleteBtn.style.cssText = 'background: #6c757d; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-size: 12px;';
+                deleteBtn.style.cssText = 'background: var(--color-error); color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-size: 12px;';
                 deleteBtn.onclick = function() {
                     var confirmMessage = isBooked ? 
                         `Delete this slot? This will also cancel the booking for ${slot.extendedProps.booking_user}!` : 
@@ -479,7 +480,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 ${template.tables.length} tables, ${template.startTime}-${template.endTime} (${template.duration}min slots)
                             </small>
                         </div>
-                        <button onclick="deleteTemplate('${key}')" style="background: #dc3545; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-size: 12px;">Delete</button>
+                        <button onclick="deleteTemplate('${key}')" class="btn btn-error btn-outline">Delete</button>
                     </div>
                 `;
                 

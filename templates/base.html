@@ -78,33 +78,35 @@
       <div class="container mx-auto px-4 py-8">
         {% block content %}this is default block content{% endblock %}
       </main>
-      <footer class="footer footer-center p-4 bg-base-300 text-base-content border-t border-base-900 mt-auto">
-        <div>
-          <p>Copyright © 2025 - All right reserved by ACME Industries Ltd</p>
-        </div>
-        <div class="flex items-baseline ml-auto">
-          <label for="theme-controller">Theme:</label>
-          <select class="select select-secondary w-full theme-controller">
-            <option value="light">Light</option>
-            <option value="dim">Dark</option>
-            <option value="coffee">Coffee</option>
-            <option value="winter">Winter</option>
-            <option value="pastel">Pastel</option>
-            <option value="dracula">Dracula</option>
-            <option value="business">Business</option>
-            <option value="acid">Acid</option>
-            <option value="cyberpunk">Cyberpunk</option>
-            <option value="cupcake">Cupcake</option>
-            <option value="forest">Forest</option>
-            <option value="halloween">Halloween</option>
-            <option value="light">Light</option>
-            <option value="midnight">Midnight</option>
-            <option value="night">Night</option>
-            <option value="retro">Retro</option>
-            <option value="silk">Silk</option>
-            <option value="lemonade">Lemonade</option>
-            <option value="nord">Nord</option>
-          </select>
+      <footer class="p-4 bg-base-300 text-base-content border-t border-base-900 mt-auto">
+        <div class="container  mx-auto footer footer-center ">
+          <div class="mr-auto">
+            <p>Copyright © 2025 - All right reserved by ACME Industries Ltd</p>
+          </div>
+          <div class="flex items-baseline ml-auto">
+            <label for="theme-controller">Theme:</label>
+            <select class="select select-secondary w-full theme-controller">
+              <option value="light">Light</option>
+              <option value="dim">Dark</option>
+              <option value="coffee">Coffee</option>
+              <option value="winter">Winter</option>
+              <option value="pastel">Pastel</option>
+              <option value="dracula">Dracula</option>
+              <option value="business">Business</option>
+              <option value="acid">Acid</option>
+              <option value="cyberpunk">Cyberpunk</option>
+              <option value="cupcake">Cupcake</option>
+              <option value="forest">Forest</option>
+              <option value="halloween">Halloween</option>
+              <option value="light">Light</option>
+              <option value="midnight">Midnight</option>
+              <option value="night">Night</option>
+              <option value="retro">Retro</option>
+              <option value="silk">Silk</option>
+              <option value="lemonade">Lemonade</option>
+              <option value="nord">Nord</option>
+            </select>
+          </div>
         </div>
       </footer>
       {% block extra_js %}{% endblock %}

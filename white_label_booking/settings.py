@@ -181,4 +181,5 @@ if DEBUG:
     INSTALLED_APPS += ['django_browser_reload']
 
 
-NPM_BIN_PATH = os.environ.get("NPM_BIN_PATH", None)
+if os.environ.get("NPM_BIN_PATH"):
+    NPM_BIN_PATH = os.environ.get("NPM_BIN_PATH")
