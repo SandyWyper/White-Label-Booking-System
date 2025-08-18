@@ -681,25 +681,25 @@ def delete_template(request):
                 'success': False,
                 'error': 'Template ID is required'
             }, status=400)
-        
+
         saved_templates = request.session.get('saved_templates', {})
-        
+
         if template_id not in saved_templates:
             return JsonResponse({
                 'success': False,
                 'error': 'Template not found'
             }, status=404)
-        
+
         # Remove the template
         del saved_templates[template_id]
         request.session['saved_templates'] = saved_templates
         request.session.modified = True
-        
+
         return JsonResponse({
             'success': True,
             'message': 'Template deleted successfully'
         })
-        
+
     except json.JSONDecodeError:
         return JsonResponse({
             'success': False,
@@ -710,27 +710,41 @@ def delete_template(request):
             'success': False,
             'error': f'An error occurred: {str(e)}'
         }, status=500)
-    
+
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+import json
+from .models import BookingTimeSlot, Booking  # Import the correct model names
+
 @require_http_methods(["DELETE"])
 def delete_all_slots_for_day(request):
     try:
         data = json.loads(request.body)
         date = data.get('date')
-        
+
         if not date:
             return JsonResponse({'success': False, 'error': 'Date is required'})
-        
-        # Get all slots for the day
-        slots_to_delete = Slot.objects.filter(date=date)
+
+
+        from datetime import datetime
+
+        # Parse the date string (assuming format: YYYY-MM-DD)
+        target_date = datetime.strptime(date, '%Y-%m-%d').date()
+
+        # Get all time slots for that date
+        slots_to_delete = BookingTimeSlot.objects.filter(
+            time_start__date=target_date
+        )
+
         deleted_count = slots_to_delete.count()
-        
-        # Delete all slots (this will also cancel any bookings)
+
         slots_to_delete.delete()
-        
+
         return JsonResponse({
             'success': True, 
             'message': f'Deleted {deleted_count} slots for {date}'
         })
-        
+
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
