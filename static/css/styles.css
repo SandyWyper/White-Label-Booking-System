@@ -1,19 +1,31 @@
-/* Staff Dashboard Styles */
+/* ========================================
+   CSS VARIABLES (Global Settings)
+   ======================================== */
 :root {
-    --dashboard-font-size: 16px;
-    --dashboard-font-family: 'Segoe UI', Arial, sans-serif;
-    --dashboard-radius: 4px;
-    --dashboard-bg: #f9f9f9;
-    --dashboard-border: 1px solid #ddd;
-    --dashboard-color: #333;
-    --dashboard-muted: #666;
-    --dashboard-success: #28a745;
-    --dashboard-danger: #dc3545;
+    /* Colors */
     --dashboard-primary: #007bff;
     --dashboard-secondary: #6c757d;
+    --dashboard-success: #28a745;
+    --dashboard-danger: #dc3545;
     --dashboard-white: #fff;
+    --dashboard-bg: #f9f9f9;
+    --dashboard-color: #333;
+    --dashboard-muted: #666;
+    --dashboard-border-color: #ddd;
+    
+    /* Typography */
+    --dashboard-font-size: 16px;
+    --dashboard-font-family: 'Segoe UI', Arial, sans-serif;
+    
+    /* Layout */
+    --dashboard-radius: 4px;
+    --dashboard-border: 1px solid var(--dashboard-border-color);
+    --dashboard-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
+/* ========================================
+   BASE STYLES
+   ======================================== */
 body {
     font-size: var(--dashboard-font-size);
     font-family: var(--dashboard-font-family);
@@ -21,23 +33,22 @@ body {
     background: var(--dashboard-bg);
 }
 
+/* ========================================
+   MAIN DASHBOARD CONTAINER
+   ======================================== */
 .staff-dashboard-container {
     max-width: 900px;
     margin: 2rem auto;
 }
 
-.dashboard-alert {
-    display: none;
-    padding: 10px;
-    margin-bottom: 20px;
-    border-radius: var(--dashboard-radius);
-}
-
+/* ========================================
+   CALENDAR STYLES
+   ======================================== */
 .dashboard-calendar {
     margin-bottom: 2rem;
     background: var(--dashboard-white);
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    box-shadow: var(--dashboard-shadow);
     padding: 1rem;
     min-height: 400px;
     max-width: 900px;
@@ -45,7 +56,55 @@ body {
     margin-right: auto;
 }
 
-/* Modal Styles */
+/* Calendar Day Cells */
+.fc-daygrid-day {
+    background: #f8fafc;
+    border-radius: 8px;
+    transition: background 0.2s;
+    height: 80px;
+    max-height: 80px;
+    overflow-y: auto;
+    position: relative;
+}
+
+/* Calendar Event Dots */
+.slot-dot {
+    display: block;
+    margin: 0 auto;
+    width: 40px;
+    height: 40px;
+    background: #12161a;
+    border-radius: 50%;
+    z-index: 2;
+}
+
+/* Hide Default FullCalendar Event Styling */
+.fc-daygrid-event {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    min-width: 0 !important;
+    height: auto !important;
+}
+
+.fc-daygrid-event .fc-event-title {
+    display: none !important;
+}
+
+/* ========================================
+   ALERT MESSAGES
+   ======================================== */
+.dashboard-alert {
+    display: none;
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: var(--dashboard-radius);
+}
+
+/* ========================================
+   MODAL STYLES
+   ======================================== */
 .dashboard-modal {
     display: none;
     position: fixed;
@@ -56,6 +115,7 @@ body {
     background: rgba(0,0,0,0.5);
     z-index: 1000;
 }
+
 .dashboard-modal-content {
     background: var(--dashboard-white);
     margin: 5% auto;
@@ -66,6 +126,7 @@ body {
     max-height: 80vh;
     overflow-y: auto;
 }
+
 .dashboard-modal-header {
     display: flex;
     justify-content: space-between;
@@ -74,6 +135,7 @@ body {
     border-bottom: var(--dashboard-border);
     padding-bottom: 10px;
 }
+
 .dashboard-modal-close {
     background: none;
     border: none;
@@ -81,13 +143,16 @@ body {
     cursor: pointer;
 }
 
-/* Slot List & Actions */
+/* ========================================
+   SLOT MANAGEMENT STYLES
+   ======================================== */
 .dashboard-slots-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 15px;
 }
+
 .dashboard-delete-all {
     padding: 8px 16px;
     background: var(--dashboard-danger);
@@ -97,11 +162,13 @@ body {
     border-radius: var(--dashboard-radius);
     font-size: 12px;
 }
+
 .dashboard-slots-list {
     list-style: none;
     padding: 0;
     margin-bottom: 20px;
 }
+
 .dashboard-slot-listitem {
     border: var(--dashboard-border);
     padding: 15px;
@@ -109,25 +176,32 @@ body {
     background: var(--dashboard-bg);
     border-radius: var(--dashboard-radius);
 }
+
 .dashboard-slot-listitem-inner {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
+
+/* Slot Status Indicators */
 .dashboard-slot-status-booked {
     color: var(--dashboard-danger);
     font-weight: bold;
     font-size: 12px;
 }
+
 .dashboard-slot-status-available {
     color: var(--dashboard-success);
     font-weight: bold;
     font-size: 12px;
 }
+
 .dashboard-slot-userinfo,
 .dashboard-slot-timerange {
     color: var(--dashboard-muted);
 }
+
+/* Slot Action Buttons */
 .dashboard-slot-action-btn {
     background: var(--dashboard-secondary);
     color: var(--dashboard-white);
@@ -138,19 +212,50 @@ body {
     font-size: 12px;
     margin-right: 5px;
 }
+
 .dashboard-slot-action-btn.book {
     background: var(--dashboard-success);
 }
+
 .dashboard-slot-action-btn.cancel {
     background: var(--dashboard-danger);
 }
 
-/* Form & Template Styles */
+/* ========================================
+   FORM STYLES
+   ======================================== */
+.dashboard-form-container {
+    display: none;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.dashboard-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.dashboard-input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: var(--dashboard-radius);
+}
+
+/* ========================================
+   BUTTON STYLES
+   ======================================== */
 .dashboard-action-buttons {
     margin-bottom: 20px;
     border-top: var(--dashboard-border);
     padding-top: 15px;
 }
+
 .dashboard-add-slot {
     margin-right: 10px;
     padding: 10px 20px;
@@ -160,6 +265,7 @@ body {
     cursor: pointer;
     border-radius: var(--dashboard-radius);
 }
+
 .dashboard-use-template {
     padding: 10px 20px;
     background: var(--dashboard-secondary);
@@ -168,26 +274,7 @@ body {
     cursor: pointer;
     border-radius: var(--dashboard-radius);
 }
-.dashboard-form-container {
-    display: none;
-    padding: 20px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    margin-bottom: 20px;
-}
-.dashboard-form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-bottom: 15px;
-}
-.dashboard-input {
-    width: 100%;
-    padding: 8px;
-    margin-top: 5px;
-    border: 1px solid #ccc;
-    border-radius: var(--dashboard-radius);
-}
+
 .dashboard-submit {
     padding: 10px 20px;
     background: var(--dashboard-success);
@@ -197,6 +284,7 @@ body {
     border-radius: var(--dashboard-radius);
     margin-right: 10px;
 }
+
 .dashboard-cancel {
     padding: 10px 20px;
     background: none;
@@ -205,6 +293,7 @@ body {
     cursor: pointer;
     border-radius: var(--dashboard-radius);
 }
+
 .dashboard-manage-templates {
     padding: 8px 12px;
     background: var(--dashboard-secondary);
@@ -214,6 +303,10 @@ body {
     border-radius: var(--dashboard-radius);
     white-space: nowrap;
 }
+
+/* ========================================
+   TEMPLATE MANAGEMENT STYLES
+   ======================================== */
 .dashboard-custom-template-settings {
     display: none;
     border: var(--dashboard-border);
@@ -221,23 +314,28 @@ body {
     border-radius: var(--dashboard-radius);
     margin-bottom: 15px;
 }
+
 .dashboard-template-select-row {
     display: flex;
     gap: 10px;
     align-items: flex-end;
 }
+
 .dashboard-template-select-col {
     flex: 1;
 }
+
 .dashboard-template-time-row {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 10px;
     margin-bottom: 15px;
 }
+
 .dashboard-templates-list {
     margin-bottom: 20px;
 }
+
 .dashboard-template-listitem {
     border: var(--dashboard-border);
     padding: 15px;
@@ -245,11 +343,13 @@ body {
     border-radius: var(--dashboard-radius);
     background: var(--dashboard-bg);
 }
+
 .dashboard-template-listitem-inner {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
+
 .dashboard-template-delete-btn {
     background: var(--dashboard-danger);
     color: var(--dashboard-white);
@@ -259,6 +359,7 @@ body {
     border-radius: var(--dashboard-radius);
     font-size: 12px;
 }
+
 .dashboard-no-templates {
     text-align: center;
     color: var(--dashboard-muted);

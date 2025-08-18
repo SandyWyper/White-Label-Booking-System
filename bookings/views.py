@@ -407,22 +407,22 @@ def staff_dashboard(request):
     # Get all slots for calendar
     all_slots = BookingTimeSlot.objects.select_related('bookable_item').all()
     
-    # Prepare slot data for FullCalendar
+
+    # Prepare slot data for FullCalendar and slot_dates for calendar dots
     slot_events = []
+    slot_dates_set = set()
     for slot in all_slots:
-        # Check if there's a booking for this slot
         booking = Booking.objects.filter(time_slot=slot).first()
         is_booked = booking is not None
         status = 'Booked' if is_booked else 'Available'
-        
-        # Extract customer name from booking notes if it exists
+
         customer_name = None
         if booking:
             if 'Booked by staff for:' in booking.notes:
                 customer_name = booking.notes.replace('Booked by staff for:', '').strip()
             else:
                 customer_name = booking.user.username
-        
+
         slot_events.append({
             'title': f"{slot.bookable_item.name} ({status})",
             'start': slot.time_start.strftime('%Y-%m-%dT%H:%M:%S'),
@@ -435,9 +435,11 @@ def staff_dashboard(request):
                 'booking_user': customer_name if customer_name else (booking.user.username if booking else None)
             }
         })
-    
+        slot_dates_set.add(slot.time_start.strftime('%Y-%m-%d'))
+
     return render(request, "staff_dashboard.html", {
-        "slot_events": json.dumps(slot_events)
+        "slot_events": json.dumps(slot_events),
+        "slot_dates": json.dumps(list(slot_dates_set)),
     })
 
 # Add these new functions to your existing views.py file
