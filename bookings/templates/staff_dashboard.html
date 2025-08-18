@@ -2,74 +2,68 @@
 {% load static %}
 {% block title %}Staff/Admin Dashboard{% endblock %}
 {% block content %}
-<div class="container" style="max-width: 900px; margin: 2rem auto;">
+<div class="container staff-dashboard-container">
     {% csrf_token %}
     <h1>Staff/Admin Dashboard</h1>
-    
     <!-- Alert Messages -->
-    <div id="alert-message" style="display: none; padding: 10px; margin-bottom: 20px; border-radius: 4px;"></div>
-    
-    <div id="calendar"></div>
+    <div id="alert-message" class="dashboard-alert"></div>
+    <div id="calendar" class="dashboard-calendar"></div>
 </div>
 
 <!-- Day Details Modal -->
-<div id="day-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
-    <div style="background: white; margin: 5% auto; padding: 20px; width: 80%; max-width: 800px; border-radius: 8px; max-height: 80%; overflow-y: auto;">
+<div id="day-modal" class="dashboard-modal">
+    <div class="dashboard-modal-content">
         <!-- Modal Header -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
+        <div class="dashboard-modal-header">
             <h2>Manage Slots for <span id="selected-date"></span></h2>
-            <button id="close-modal" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+            <button id="close-modal" class="dashboard-modal-close">&times;</button>
         </div>
-        
         <!-- Current Slots -->
         <div id="current-slots-section">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div class="dashboard-slots-header">
                 <h3>Current Slots</h3>
-                <button id="delete-all-slots-btn" style="padding: 8px 16px; background: #dc3545; color: white; border: none; cursor: pointer; border-radius: 4px; font-size: 12px;">Delete All Slots</button>
+                <button id="delete-all-slots-btn" class="dashboard-delete-all">Delete All Slots</button>
             </div>
-            <ul id="slots-list" style="list-style: none; padding: 0; margin-bottom: 20px;"></ul>
+            <ul id="slots-list" class="dashboard-slots-list"></ul>
         </div>
-        
         <!-- Action Buttons -->
-        <div style="margin-bottom: 20px; border-top: 1px solid #ddd; padding-top: 15px;">
-            <button id="add-single-slot-btn" style="margin-right: 10px; padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; border-radius: 4px;">Add Single Slot</button>
-            <button id="use-day-template-btn" style="padding: 10px 20px; background: #6c757d; color: white; border: none; cursor: pointer; border-radius: 4px;">Use Day Template</button>
+        <div class="dashboard-action-buttons">
+            <button id="add-single-slot-btn" class="dashboard-add-slot">Add Single Slot</button>
+            <button id="use-day-template-btn" class="dashboard-use-template">Use Day Template</button>
         </div>
-        
         <!-- Add Single Slot Form -->
-        <div id="add-slot-form-container" style="display:none; padding: 20px; background: #f8f9fa; border-radius: 8px; margin-bottom: 20px;">
+        <div id="add-slot-form-container" class="dashboard-form-container">
             <h4>Add Single Slot</h4>
             <form id="add-slot-form">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <div class="dashboard-form-grid">
                     <div>
                         <label>Table/Item Name:</label><br>
-                        <input type="text" name="table" required style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                        <input type="text" name="table" required class="dashboard-input">
                     </div>
                     <div>
                         <label>Duration (minutes):</label><br>
-                        <input type="number" name="duration" min="15" value="60" required style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                        <input type="number" name="duration" min="15" value="60" required class="dashboard-input">
                     </div>
                 </div>
-                <div style="margin-bottom: 15px;">
+                <div>
                     <label>Start Time:</label><br>
-                    <input type="time" name="start_time" required style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                    <input type="time" name="start_time" required class="dashboard-input">
                 </div>
                 <div>
-                    <button type="submit" style="padding: 10px 20px; background: #28a745; color: white; border: none; cursor: pointer; border-radius: 4px; margin-right: 10px;">Add Slot</button>
-                    <button type="button" id="cancel-add-slot" style="padding: 10px 20px; background: none; color: #007bff; border: 1px solid #007bff; cursor: pointer; border-radius: 4px;">Cancel</button>
+                    <button type="submit" class="dashboard-submit">Add Slot</button>
+                    <button type="button" id="cancel-add-slot" class="dashboard-cancel">Cancel</button>
                 </div>
             </form>
         </div>
-        
         <!-- Day Template Form -->
-        <div id="day-template-form-container" style="display:none; padding: 20px; background: #f8f9fa; border-radius: 8px; margin-bottom: 20px;">
+        <div id="day-template-form-container" class="dashboard-form-container">
             <h4>Use Day Template</h4>
             <form id="day-template-form">
-                <div style="margin-bottom: 15px;">
+                <div>
                     <label>Select Template:</label><br>
-                    <div style="display: flex; gap: 10px; align-items: flex-end;">
-                        <div style="flex: 1;">
-                            <select name="template" required style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                    <div class="dashboard-template-select-row">
+                        <div class="dashboard-template-select-col">
+                            <select name="template" required class="dashboard-input">
                                 <option value="">Choose a template...</option>
                                 <option value="normal">Normal Day (5 tables, 9AM-9PM)</option>
                                 <option value="summer">Summer Day (9 tables with balcony, 9AM-10PM)</option>
@@ -77,46 +71,44 @@
                                 <option value="custom">Create New Template...</option>
                             </select>
                         </div>
-                        <button type="button" id="manage-templates-btn" style="padding: 8px 12px; background: #6c757d; color: white; border: none; cursor: pointer; border-radius: 4px; white-space: nowrap;">Manage</button>
+                        <button type="button" id="manage-templates-btn" class="dashboard-manage-templates">Manage</button>
                     </div>
                 </div>
-                
                 <!-- Custom Template Settings -->
-                <div id="custom-template-settings" style="display: none; border: 1px solid #ddd; padding: 15px; border-radius: 4px; margin-bottom: 15px;">
+                <div id="custom-template-settings" class="dashboard-custom-template-settings">
                     <h5>Create New Template</h5>
-                    <div style="margin-bottom: 15px;">
+                    <div>
                         <label>Template Name:</label><br>
-                        <input type="text" name="template_name" placeholder="e.g. Holiday Hours" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                        <input type="text" name="template_name" placeholder="e.g. Holiday Hours" class="dashboard-input">
                     </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                    <div class="dashboard-template-time-row">
                         <div>
                             <label>Start Time:</label><br>
-                            <input type="time" name="custom_start" value="09:00" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                            <input type="time" name="custom_start" value="09:00" class="dashboard-input">
                         </div>
                         <div>
                             <label>End Time:</label><br>
-                            <input type="time" name="custom_end" value="21:00" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                            <input type="time" name="custom_end" value="21:00" class="dashboard-input">
                         </div>
                         <div>
                             <label>Slot Duration (min):</label><br>
-                            <input type="number" name="custom_duration" value="60" min="15" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                            <input type="number" name="custom_duration" value="60" min="15" class="dashboard-input">
                         </div>
                     </div>
                     <div>
                         <label>Table Names (one per line):</label><br>
-                        <textarea name="custom_tables" rows="4" placeholder="Table 1&#10;Table 2&#10;VIP Table&#10;Balcony 1" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+                        <textarea name="custom_tables" rows="4" placeholder="Table 1&#10;Table 2&#10;VIP Table&#10;Balcony 1" class="dashboard-input"></textarea>
                     </div>
-                    <div style="margin-top: 10px;">
+                    <div>
                         <label>
-                            <input type="checkbox" name="save_template" style="margin-right: 5px;">
+                            <input type="checkbox" name="save_template">
                             Save this as a template for future use
                         </label>
                     </div>
                 </div>
-                
                 <div>
-                    <button type="submit" style="padding: 10px 20px; background: #28a745; color: white; border: none; cursor: pointer; border-radius: 4px; margin-right: 10px;">Apply Template</button>
-                    <button type="button" id="cancel-day-template" style="padding: 10px 20px; background: none; color: #007bff; border: 1px solid #007bff; cursor: pointer; border-radius: 4px;">Cancel</button>
+                    <button type="submit" class="dashboard-submit">Apply Template</button>
+                    <button type="button" id="cancel-day-template" class="dashboard-cancel">Cancel</button>
                 </div>
             </form>
         </div>
@@ -124,24 +116,21 @@
 </div>
 
 <!-- Template Management Modal -->
-<div id="template-management-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1001;">
-    <div style="background: white; margin: 10% auto; padding: 20px; width: 60%; max-width: 600px; border-radius: 8px; max-height: 70%; overflow-y: auto;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
+<div id="template-management-modal" class="dashboard-modal">
+    <div class="dashboard-modal-content">
+        <div class="dashboard-modal-header">
             <h3>Manage Templates</h3>
-            <button id="close-template-modal" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+            <button id="close-template-modal" class="dashboard-modal-close">&times;</button>
         </div>
-        
         <div id="saved-templates-list">
             <h4>Saved Templates</h4>
-            <div id="templates-container" style="margin-bottom: 20px;"></div>
+            <div id="templates-container" class="dashboard-templates-list"></div>
         </div>
-        
-        <div style="text-align: center; color: #666; font-style: italic;" id="no-templates" style="display: none;">
+        <div id="no-templates" class="dashboard-no-templates">
             No custom templates saved yet.
         </div>
     </div>
 </div>
-
 {% endblock %}
 
 {% block extra_js %}
@@ -170,24 +159,24 @@ document.addEventListener('DOMContentLoaded', function() {
     var dayTemplates = {
         'normal': {
             name: 'Normal Day',
-            tables: ['Table 1', 'Table 2', 'Table 3', 'Table 4', 'Table 5'],
-            startTime: '09:00',
-            endTime: '21:00',
-            duration: 60
+            tables: ['Table 1', 'Table 2', 'Table 3'],
+            startTime: '16:00',
+            endTime: '22:00',
+            duration: 120
         },
         'summer': {
             name: 'Summer Day',
-            tables: ['Table 1', 'Table 2', 'Table 3', 'Table 4', 'Table 5', 'Balcony 1', 'Balcony 2', 'Balcony 3', 'Balcony 4'],
-            startTime: '09:00',
+            tables: ['Table 1', 'Table 2', 'Table 3', 'Balcony 1', 'Balcony 2', 'Balcony 3', 'Balcony 4'],
+            startTime: '16:00',
             endTime: '22:00',
-            duration: 60
+            duration: 120
         },
         'weekend': {
             name: 'Weekend',
-            tables: ['Table 1', 'Table 2', 'Table 3', 'Table 4', 'Table 5', 'VIP Table', 'Bar Table'],
+            tables: ['Table 1', 'Table 2', 'Table 3', 'VIP Table', 'Bar Table'],
             startTime: '10:00',
             endTime: '23:00',
-            duration: 90
+            duration: 120
         }
     };
 
