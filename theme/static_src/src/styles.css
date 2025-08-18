@@ -11,7 +11,8 @@
 @source "../../../**/*.{html,py,js}";
 
 @plugin "daisyui" {
-  themes: light --default, dim --prefersdark;
+  /* themes: light --default, dim --prefersdark; */
+  themes: light --default;
   root: ":root";
   include: ;
   exclude: ;
