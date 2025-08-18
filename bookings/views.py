@@ -196,9 +196,6 @@ def book_time_slot(request):
 
 # Staff dashboard view.
 
-
-# Add these views to your existing views.py file
-
 @user_passes_test(lambda u: u.is_staff)
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -402,7 +399,6 @@ def staff_book_slot(request):
         }, status=500)
 
 
-
 @user_passes_test(lambda u: u.is_staff)
 def staff_dashboard(request):
     from .models import BookableItem, BookingTimeSlot, Booking
@@ -443,6 +439,8 @@ def staff_dashboard(request):
     return render(request, "staff_dashboard.html", {
         "slot_events": json.dumps(slot_events)
     })
+
+# Add these new functions to your existing views.py file
 
 @user_passes_test(lambda u: u.is_staff)
 @csrf_exempt
@@ -538,3 +536,201 @@ def staff_create_template_slots(request):
             'success': False,
             'error': f'An error occurred: {str(e)}'
         }, status=500)
+
+
+@user_passes_test(lambda u: u.is_staff)
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def delete_slot(request):
+    """
+    Staff can delete a time slot (and its booking if it exists)
+    """
+    try:
+        data = json.loads(request.body)
+        slot_id = data.get('slot_id')
+        
+        if not slot_id:
+            return JsonResponse({
+                'success': False,
+                'error': 'Slot ID is required'
+            }, status=400)
+        
+        # Get the time slot
+        time_slot = get_object_or_404(BookingTimeSlot, id=slot_id)
+        
+        # Use transaction to ensure atomicity
+        with transaction.atomic():
+            # Check if there's a booking and delete it first
+            booking = Booking.objects.filter(time_slot=time_slot).first()
+            if booking:
+                booking.delete()
+            
+            # Delete the time slot
+            time_slot.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Slot deleted successfully'
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON data'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'An error occurred: {str(e)}'
+        }, status=500)
+
+
+@user_passes_test(lambda u: u.is_staff)
+@csrf_exempt  
+@require_http_methods(["POST"])
+def save_template(request):
+    """
+    Save a custom day template for future use
+    """
+    try:
+        data = json.loads(request.body)
+        template_name = data.get('name', '').strip()
+        template_data = data.get('template_data', {})
+        
+        if not template_name:
+            return JsonResponse({
+                'success': False,
+                'error': 'Template name is required'
+            }, status=400)
+        
+        if not template_data:
+            return JsonResponse({
+                'success': False,
+                'error': 'Template data is required'
+            }, status=400)
+        
+        # Store templates in the user's session
+        if 'saved_templates' not in request.session:
+            request.session['saved_templates'] = {}
+        
+        # Create a unique key for the template
+        template_key = template_name.lower().replace(' ', '_').replace('-', '_')
+        
+        request.session['saved_templates'][template_key] = {
+            'name': template_name,
+            'tables': template_data.get('tables', []),
+            'startTime': template_data.get('startTime', '09:00'),
+            'endTime': template_data.get('endTime', '17:00'),
+            'duration': template_data.get('duration', 60)
+        }
+        
+        request.session.modified = True
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Template "{template_name}" saved successfully',
+            'template_id': template_key
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON data'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'An error occurred: {str(e)}'
+        }, status=500)
+
+
+@user_passes_test(lambda u: u.is_staff)
+@require_http_methods(["GET"])
+def get_saved_templates(request):
+    """
+    Get all saved templates for the current user
+    """
+    try:
+        saved_templates = request.session.get('saved_templates', {})
+        
+        return JsonResponse({
+            'success': True,
+            'templates': saved_templates
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'An error occurred: {str(e)}'
+        }, status=500)
+
+
+@user_passes_test(lambda u: u.is_staff)
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def delete_template(request):
+    """
+    Delete a saved template
+    """
+    try:
+        data = json.loads(request.body)
+        template_id = data.get('template_id')
+        
+        if not template_id:
+            return JsonResponse({
+                'success': False,
+                'error': 'Template ID is required'
+            }, status=400)
+        
+        saved_templates = request.session.get('saved_templates', {})
+        
+        if template_id not in saved_templates:
+            return JsonResponse({
+                'success': False,
+                'error': 'Template not found'
+            }, status=404)
+        
+        # Remove the template
+        del saved_templates[template_id]
+        request.session['saved_templates'] = saved_templates
+        request.session.modified = True
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Template deleted successfully'
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON data'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'An error occurred: {str(e)}'
+        }, status=500)
+    
+@require_http_methods(["DELETE"])
+def delete_all_slots_for_day(request):
+    try:
+        data = json.loads(request.body)
+        date = data.get('date')
+        
+        if not date:
+            return JsonResponse({'success': False, 'error': 'Date is required'})
+        
+        # Get all slots for the day
+        slots_to_delete = Slot.objects.filter(date=date)
+        deleted_count = slots_to_delete.count()
+        
+        # Delete all slots (this will also cancel any bookings)
+        slots_to_delete.delete()
+        
+        return JsonResponse({
+            'success': True, 
+            'message': f'Deleted {deleted_count} slots for {date}'
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})

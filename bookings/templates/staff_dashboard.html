@@ -3,6 +3,7 @@
 {% block title %}Staff/Admin Dashboard{% endblock %}
 {% block content %}
 <div class="container" style="max-width: 900px; margin: 2rem auto;">
+    {% csrf_token %}
     <h1>Staff/Admin Dashboard</h1>
     
     <!-- Alert Messages -->
@@ -22,7 +23,10 @@
         
         <!-- Current Slots -->
         <div id="current-slots-section">
-            <h3>Current Slots</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3>Current Slots</h3>
+                <button id="delete-all-slots-btn" style="padding: 8px 16px; background: #dc3545; color: white; border: none; cursor: pointer; border-radius: 4px; font-size: 12px;">Delete All Slots</button>
+            </div>
             <ul id="slots-list" style="list-style: none; padding: 0; margin-bottom: 20px;"></ul>
         </div>
         
@@ -63,18 +67,27 @@
             <form id="day-template-form">
                 <div style="margin-bottom: 15px;">
                     <label>Select Template:</label><br>
-                    <select name="template" required style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
-                        <option value="">Choose a template...</option>
-                        <option value="normal">Normal Day (5 tables, 9AM-9PM)</option>
-                        <option value="summer">Summer Day (9 tables with balcony, 9AM-10PM)</option>
-                        <option value="weekend">Weekend (7 tables, 10AM-11PM)</option>
-                        <option value="custom">Custom Template...</option>
-                    </select>
+                    <div style="display: flex; gap: 10px; align-items: flex-end;">
+                        <div style="flex: 1;">
+                            <select name="template" required style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                                <option value="">Choose a template...</option>
+                                <option value="normal">Normal Day (5 tables, 9AM-9PM)</option>
+                                <option value="summer">Summer Day (9 tables with balcony, 9AM-10PM)</option>
+                                <option value="weekend">Weekend (7 tables, 10AM-11PM)</option>
+                                <option value="custom">Create New Template...</option>
+                            </select>
+                        </div>
+                        <button type="button" id="manage-templates-btn" style="padding: 8px 12px; background: #6c757d; color: white; border: none; cursor: pointer; border-radius: 4px; white-space: nowrap;">Manage</button>
+                    </div>
                 </div>
                 
-                <!-- Custom Template Settings (shown when custom is selected) -->
+                <!-- Custom Template Settings -->
                 <div id="custom-template-settings" style="display: none; border: 1px solid #ddd; padding: 15px; border-radius: 4px; margin-bottom: 15px;">
-                    <h5>Custom Template Settings</h5>
+                    <h5>Create New Template</h5>
+                    <div style="margin-bottom: 15px;">
+                        <label>Template Name:</label><br>
+                        <input type="text" name="template_name" placeholder="e.g. Holiday Hours" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px;">
                         <div>
                             <label>Start Time:</label><br>
@@ -93,6 +106,12 @@
                         <label>Table Names (one per line):</label><br>
                         <textarea name="custom_tables" rows="4" placeholder="Table 1&#10;Table 2&#10;VIP Table&#10;Balcony 1" style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
                     </div>
+                    <div style="margin-top: 10px;">
+                        <label>
+                            <input type="checkbox" name="save_template" style="margin-right: 5px;">
+                            Save this as a template for future use
+                        </label>
+                    </div>
                 </div>
                 
                 <div>
@@ -104,6 +123,25 @@
     </div>
 </div>
 
+<!-- Template Management Modal -->
+<div id="template-management-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1001;">
+    <div style="background: white; margin: 10% auto; padding: 20px; width: 60%; max-width: 600px; border-radius: 8px; max-height: 70%; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
+            <h3>Manage Templates</h3>
+            <button id="close-template-modal" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+        </div>
+        
+        <div id="saved-templates-list">
+            <h4>Saved Templates</h4>
+            <div id="templates-container" style="margin-bottom: 20px;"></div>
+        </div>
+        
+        <div style="text-align: center; color: #666; font-style: italic;" id="no-templates" style="display: none;">
+            No custom templates saved yet.
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
@@ -111,6 +149,10 @@
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Get CSRF token for Django requests
+    function getCSRFToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    }
     var calendarEl = document.getElementById('calendar');
     var slots = JSON.parse('{{ slot_events|escapejs }}');
     var calendar = new FullCalendar.Calendar(calendarEl, {
@@ -124,7 +166,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     calendar.render();
 
-    // Day templates - you can modify these as needed
+    // Built-in day templates (simplified)
     var dayTemplates = {
         'normal': {
             name: 'Normal Day',
@@ -149,7 +191,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // Show alert messages
+    var savedTemplates = {};
+    loadSavedTemplates();
+
+    // Simple alert function
     function showAlert(message, type = 'success') {
         const alertDiv = document.getElementById('alert-message');
         alertDiv.style.backgroundColor = type === 'success' ? '#d4edda' : '#f8d7da';
@@ -164,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showDayModal(dateStr) {
-        // Filter slots for the selected day
+        // Get slots for this day
         var daySlots = slots.filter(function(slot) {
             return slot.start.startsWith(dateStr);
         });
@@ -206,7 +251,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (isBooked) {
                     var cancelBtn = document.createElement('button');
                     cancelBtn.textContent = 'Cancel Booking';
-                    cancelBtn.style.cssText = 'background: #dc3545; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-size: 12px;';
+                    cancelBtn.style.cssText = 'background: #dc3545; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-size: 12px; margin-right: 5px;';
                     cancelBtn.onclick = function() {
                         var customerName = slot.extendedProps.booking_user || 'Unknown';
                         if (confirm(`Cancel booking for ${customerName}?`)) {
@@ -217,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     var bookBtn = document.createElement('button');
                     bookBtn.textContent = 'Book for Walk-in';
-                    bookBtn.style.cssText = 'background: #28a745; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-size: 12px;';
+                    bookBtn.style.cssText = 'background: #28a745; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-size: 12px; margin-right: 5px;';
                     bookBtn.onclick = function() {
                         var customerName = prompt(`Enter customer name:`);
                         if (customerName !== null && customerName.trim() !== '') {
@@ -227,12 +272,74 @@ document.addEventListener('DOMContentLoaded', function() {
                     actionsDiv.appendChild(bookBtn);
                 }
                 
+                var deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Delete Slot';
+                deleteBtn.style.cssText = 'background: #6c757d; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-size: 12px;';
+                deleteBtn.onclick = function() {
+                    var confirmMessage = isBooked ? 
+                        `Delete this slot? This will also cancel the booking for ${slot.extendedProps.booking_user}!` : 
+                        `Delete this slot for ${slot.extendedProps.table} at ${timeRange}?`;
+                    
+                    if (confirm(confirmMessage)) {
+                        deleteSlot(slot.extendedProps.slot_id);
+                    }
+                };
+                actionsDiv.appendChild(deleteBtn);
+                
                 list.appendChild(li);
             });
         }
         
-        // Show the modal
         document.getElementById('day-modal').style.display = 'block';
+    }
+
+    // Delete all slots for a day
+    document.getElementById('delete-all-slots-btn').onclick = function() {
+        var selectedDate = document.getElementById('selected-date').textContent;
+        var daySlots = slots.filter(function(slot) {
+            return slot.start.startsWith(selectedDate);
+        });
+        
+        if (daySlots.length === 0) {
+            showAlert('No slots to delete for this day.', 'danger');
+            return;
+        }
+        
+        var bookedSlots = daySlots.filter(slot => slot.extendedProps.is_booked);
+        var confirmMessage = `Delete all ${daySlots.length} slots for ${selectedDate}?`;
+        
+        if (bookedSlots.length > 0) {
+            confirmMessage += `\n\nWarning: This will cancel ${bookedSlots.length} booking(s)!`;
+        }
+        
+        if (confirm(confirmMessage)) {
+            deleteAllSlotsForDay(selectedDate);
+        }
+    };
+
+    function deleteAllSlotsForDay(date) {
+        fetch('/bookings/delete-all-slots-for-day/', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(),
+            },
+            body: JSON.stringify({
+                date: date
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert(data.message, 'success');
+                location.reload();
+            } else {
+                showAlert(data.error, 'danger');
+            }
+        })
+        .catch(error => {
+            showAlert('An error occurred: ' + error.message, 'danger');
+        });
     }
 
     // Modal controls
@@ -240,7 +347,6 @@ document.addEventListener('DOMContentLoaded', function() {
         closeModal();
     };
 
-    // Close modal when clicking outside
     document.getElementById('day-modal').onclick = function(e) {
         if (e.target === this) {
             closeModal();
@@ -249,7 +355,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function closeModal() {
         document.getElementById('day-modal').style.display = 'none';
-        // Reset forms
         document.getElementById('add-slot-form-container').style.display = 'none';
         document.getElementById('day-template-form-container').style.display = 'none';
         document.getElementById('add-slot-form').reset();
@@ -277,7 +382,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('day-template-form').reset();
     };
 
-    // Show/hide custom template settings
     document.querySelector('select[name="template"]').onchange = function() {
         var customSettings = document.getElementById('custom-template-settings');
         if (this.value === 'custom') {
@@ -287,12 +391,112 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // Cancel booking function
-    function cancelBooking(slotId) {
-        fetch('/bookings/staff-cancel-booking/', {
+    // Template management
+    document.getElementById('manage-templates-btn').onclick = function() {
+        showTemplateManagementModal();
+    };
+
+    document.getElementById('close-template-modal').onclick = function() {
+        document.getElementById('template-management-modal').style.display = 'none';
+    };
+
+    function loadSavedTemplates() {
+        fetch('/bookings/get-saved-templates/')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                savedTemplates = data.templates;
+                updateTemplateSelect();
+            }
+        })
+        .catch(error => {
+            console.error('Error loading templates:', error);
+        });
+    }
+
+    function updateTemplateSelect() {
+        var select = document.querySelector('select[name="template"]');
+        var options = select.querySelectorAll('option[data-saved="true"]');
+        options.forEach(opt => opt.remove());
+        
+        Object.keys(savedTemplates).forEach(key => {
+            var option = document.createElement('option');
+            option.value = 'saved_' + key;
+            option.textContent = savedTemplates[key].name;
+            option.setAttribute('data-saved', 'true');
+            select.insertBefore(option, select.querySelector('option[value="custom"]'));
+        });
+    }
+
+    function showTemplateManagementModal() {
+        var container = document.getElementById('templates-container');
+        var noTemplates = document.getElementById('no-templates');
+        
+        container.innerHTML = '';
+        
+        if (Object.keys(savedTemplates).length === 0) {
+            noTemplates.style.display = 'block';
+        } else {
+            noTemplates.style.display = 'none';
+            
+            Object.keys(savedTemplates).forEach(key => {
+                var template = savedTemplates[key];
+                var div = document.createElement('div');
+                div.style.cssText = 'border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 4px; background: #f9f9f9;';
+                
+                div.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="flex: 1;">
+                            <h5 style="margin: 0 0 5px 0;">${template.name}</h5>
+                            <small style="color: #666;">
+                                ${template.tables.length} tables, ${template.startTime}-${template.endTime} (${template.duration}min slots)
+                            </small>
+                        </div>
+                        <button onclick="deleteTemplate('${key}')" style="background: #dc3545; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-size: 12px;">Delete</button>
+                    </div>
+                `;
+                
+                container.appendChild(div);
+            });
+        }
+        
+        document.getElementById('template-management-modal').style.display = 'block';
+    }
+
+    window.deleteTemplate = function(templateId) {
+        if (confirm('Delete this template?')) {
+            fetch('/bookings/delete-template/', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    template_id: templateId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('Template deleted successfully!', 'success');
+                    loadSavedTemplates();
+                    showTemplateManagementModal();
+                } else {
+                    showAlert(data.error, 'danger');
+                }
+            })
+            .catch(error => {
+                showAlert('An error occurred: ' + error.message, 'danger');
+            });
+        }
+    };
+
+    // Basic functions (keeping them simple)
+    function deleteSlot(slotId) {
+        fetch('/bookings/delete-slot/', {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(),
             },
             body: JSON.stringify({
                 slot_id: slotId
@@ -312,12 +516,37 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Book slot for customer function
+    function cancelBooking(slotId) {
+        fetch('/bookings/staff-cancel-booking/', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(),
+            },
+            body: JSON.stringify({
+                slot_id: slotId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert(data.message, 'success');
+                location.reload();
+            } else {
+                showAlert(data.error, 'danger');
+            }
+        })
+        .catch(error => {
+            showAlert('An error occurred: ' + error.message, 'danger');
+        });
+    }
+
     function bookSlotForCustomer(slotId, customerName) {
         fetch('/bookings/staff-book-slot/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(),
             },
             body: JSON.stringify({
                 slot_id: slotId,
@@ -338,7 +567,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Add single slot form submission
+    // Add single slot
     document.getElementById('add-slot-form').addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -375,7 +604,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Day template form submission
+    // Day template form
     document.getElementById('day-template-form').addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -386,18 +615,27 @@ document.addEventListener('DOMContentLoaded', function() {
         var templateData;
         
         if (templateType === 'custom') {
-            // Get custom template data
+            var templateName = formData.get('template_name');
             var tablesText = formData.get('custom_tables');
             var tablesList = tablesText.split('\n').map(t => t.trim()).filter(t => t.length > 0);
+            var saveTemplate = formData.get('save_template') === 'on';
             
             templateData = {
+                name: templateName || 'Custom Template',
                 tables: tablesList,
                 startTime: formData.get('custom_start'),
                 endTime: formData.get('custom_end'),
                 duration: parseInt(formData.get('custom_duration'))
             };
+            
+            if (saveTemplate && templateName) {
+                saveCustomTemplate(templateName, templateData);
+            }
+            
+        } else if (templateType.startsWith('saved_')) {
+            var templateId = templateType.replace('saved_', '');
+            templateData = savedTemplates[templateId];
         } else {
-            // Use predefined template
             templateData = dayTemplates[templateType];
         }
         
@@ -406,12 +644,36 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Create multiple slots based on template
         createSlotsFromTemplate(selectedDate, templateData);
         
         document.getElementById('day-template-form-container').style.display = 'none';
         this.reset();
     });
+
+    function saveCustomTemplate(templateName, templateData) {
+        fetch('/bookings/save-template/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: templateName,
+                template_data: templateData
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('Template saved successfully!', 'success');
+                loadSavedTemplates();
+            } else {
+                showAlert(data.error, 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error saving template:', error);
+        });
+    }
 
     function createSlotsFromTemplate(date, template) {
         var slots = [];
@@ -430,7 +692,6 @@ document.addEventListener('DOMContentLoaded', function() {
             var endHour = startHour + Math.floor(endMinute / 60);
             endMinute = endMinute % 60;
             
-            // Check if end time exceeds our closing time
             var endTimeStr = String(endHour).padStart(2, '0') + ':' + String(endMinute).padStart(2, '0');
             if (endTimeStr > endTime) break;
             
