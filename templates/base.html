@@ -1,4 +1,5 @@
 {% load static %}
+{% load static tailwind_tags %}
 {% url 'account_login' as login_url %}
 {% url 'account_signup' as signup_url %}
 {% url 'account_logout' as logout_url %}
@@ -12,27 +13,55 @@
     </title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'css/datepicker.material.css' %}">
-    <script src="{% static 'js/datepicker.js' %}"></script>
+    {% tailwind_css %}
+    <script src="{% static 'js/datepicker.js' %}" defer></script>
     {% block extra_css %}{% endblock %}
   </head>
   <body>
     <!-- Navigation -->
-    <nav>
-      <div>
-        <div>
-          <div>
-            <a href="{% url 'home' %}">Booking home</a>
-          </div>
-          <ul>
+    <nav class="bg-base-100 shadow-sm px-4">
+      <div class="container navbar mx-auto">
+        <div class="flex-1">
+          <a href="/" class="link link-hover text-xl">Booking home</a>
+        </div>
+        <div class="flex-none">
+          <ul class="menu menu-horizontal px-1 mb-0">
+            <details class="md:hidden relative cursor-pointer">
+              <summary>Menu</summary>
+              <ul class="bg-base-100 rounded-t-none p-2 absolute top-10 right-0 w-max z-10 shadow-lg">
+                {% if user.is_staff %}
+                  <li>
+                    <a href="/staff-dashboard/">Staff Dashboard</a>
+                  </li>
+                {% endif %}
+                {% if user.is_authenticated %}
+                  <li>
+                    <a href="{% url 'account_logout' %}">Logout</a>
+                  </li>
+                {% else %}
+                  <li>
+                    <a href="{% url 'account_signup' %}">Register</a>
+                  </li>
+                  <li>
+                    <a href="{% url 'account_login' %}">Login</a>
+                  </li>
+                {% endif %}
+              </ul>
+            </details>
+            {% if user.is_staff %}
+              <li class="hidden md:block">
+                <a href="/staff-dashboard/">Staff Dashboard</a>
+              </li>
+            {% endif %}
             {% if user.is_authenticated %}
-              <li>
+              <li class="hidden md:block">
                 <a href="{% url 'account_logout' %}">Logout</a>
               </li>
             {% else %}
-              <li>
+              <li class="hidden md:block">
                 <a href="{% url 'account_signup' %}">Register</a>
               </li>
-              <li>
+              <li class="hidden md:block">
                 <a href="{% url 'account_login' %}">Login</a>
               </li>
             {% endif %}
@@ -41,9 +70,13 @@
       </div>
     </nav>
     {% if messages %}
-      {% for message in messages %}<div class="alert alert-{{ message.tags }}">{{ message }}</div>{% endfor %}
+      <div class="toast toast-top toast-center">
+        {% for message in messages %}<div class="alert alert-{{ message.tags }}">{{ message }}</div>{% endfor %}
+      </div>
     {% endif %}
-    {% block content %}this is default block content{% endblock %}
+    <main class="container mx-auto px-4 py-8">
+      {% block content %}this is default block content{% endblock %}
+    </main>
     {% block extra_js %}{% endblock %}
   </body>
 </html>
